@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>沉没的澜屿 · 考古语言学解谜</title>
+<style>
+:root{
+  --bg:#13100d; --panel:#1e1913; --panel2:#262017; --stone:#2b241b;
+  --amber:#d9a441; --amber2:#f0c674; --ink:#e9e0cd; --dim:#9c8f78;
+  --ok:#7fbf7f; --bad:#d96a5a; --line:#3a3226;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg); color:var(--ink);
+  font-family:"Noto Serif SC","Source Han Serif SC","SimSun",Georgia,serif;
+  line-height:1.75; min-height:100vh;
+}
+#dust{position:fixed;inset:0;pointer-events:none;z-index:1;opacity:.5}
+.wrap{position:relative;z-index:2;max-width:1180px;margin:0 auto;padding:0 20px 80px}
+header{padding:38px 0 10px;text-align:center}
+header h1{
+  font-size:40px;letter-spacing:10px;color:var(--amber2);
+  text-shadow:0 0 24px rgba(217,164,65,.25);font-weight:600;
+}
+header .sub{color:var(--dim);letter-spacing:4px;margin-top:8px;font-size:14px}
+.rule{height:1px;background:linear-gradient(90deg,transparent,var(--amber),transparent);margin:22px auto;max-width:560px}
+
+/* ---------- intro overlay ---------- */
+#intro{
+  position:fixed;inset:0;z-index:50;background:radial-gradient(ellipse at 50% 30%,#1d1812,#0d0b08 75%);
+  display:flex;align-items:center;justify-content:center;padding:24px;
+}
+#intro .card{
+  max-width:680px;background:var(--panel);border:1px solid var(--line);
+  border-radius:14px;padding:40px 44px;box-shadow:0 30px 80px rgba(0,0,0,.6);
+}
+#intro h1{color:var(--amber2);font-size:32px;letter-spacing:8px;text-align:center;margin-bottom:4px}
+#intro .en{text-align:center;color:var(--dim);font-size:12px;letter-spacing:3px;margin-bottom:22px}
+#intro p{margin:12px 0;color:#d8cfbc;font-size:15.5px}
+#intro .name-row{display:flex;gap:12px;margin:26px 0 8px;align-items:center;justify-content:center}
+#intro input{
+  background:#14100b;border:1px solid var(--line);color:var(--ink);
+  padding:10px 14px;border-radius:8px;font-size:15px;width:220px;font-family:inherit;
+}
+.btn{
+  background:linear-gradient(180deg,#e8b858,#c08a2e);color:#241a08;border:none;
+  padding:10px 26px;border-radius:8px;font-size:16px;letter-spacing:3px;cursor:pointer;
+  font-family:inherit;font-weight:700;box-shadow:0 4px 14px rgba(217,164,65,.25);
+  transition:transform .15s, box-shadow .15s;
+}
+.btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(217,164,65,.4)}
+.btn.ghost{background:transparent;color:var(--amber);border:1px solid var(--amber);box-shadow:none;font-weight:400}
+.btn:disabled{opacity:.35;cursor:not-allowed;transform:none}
+
+/* ---------- layout ---------- */
+#main{display:none;grid-template-columns:minmax(0,1fr) 320px;gap:26px;align-items:start}
+#main.show{display:grid}
+@media (max-width:920px){#main.show{display:block}#notebook{position:static;margin-top:30px}}
+
+section.stage{
+  background:var(--panel);border:1px solid var(--line);border-radius:14px;
+  padding:30px 34px;margin-bottom:28px;
+}
+section.stage.locked{display:none}
+section.stage.unlocked{animation:fadein .8s ease}
+@keyframes fadein{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+.stage h2{color:var(--amber2);font-size:22px;letter-spacing:4px;margin-bottom:4px}
+.stage .tag{color:var(--dim);font-size:12.5px;letter-spacing:2px;margin-bottom:14px}
+.stage p{margin:10px 0;font-size:15px;color:#ddd4c0}
+.stage .narr{color:#bfb49a;font-size:14.5px;border-left:3px solid var(--amber);padding-left:14px;margin:14px 0}
+
+/* ---------- tablets ---------- */
+.tablets{display:flex;flex-wrap:wrap;gap:18px;margin:18px 0}
+.tablet{
+  background:
+    radial-gradient(ellipse at 30% 20%, #3a3123, #2b241b 60%, #221c14);
+  border:1px solid #4a3f2c;border-radius:16px 24px 18px 26px;
+  padding:16px 20px;min-width:150px;
+  box-shadow:inset 0 2px 10px rgba(255,235,190,.06), inset 0 -8px 18px rgba(0,0,0,.45), 0 8px 20px rgba(0,0,0,.4);
+  position:relative;
+}
+.tablet .cap{color:var(--dim);font-size:12px;letter-spacing:1px;margin-bottom:8px;text-align:center}
+.tablet .foot{color:#857a62;font-size:11.5px;margin-top:8px;text-align:center}
+.picto{display:flex;flex-wrap:wrap;gap:3px;max-width:190px;justify-content:center;padding:6px;border-bottom:1px dashed #4a3f2c;margin-bottom:8px}
+.picto svg{color:#b2763a}
+.gline{display:flex;align-items:center;gap:14px;flex-wrap:wrap;justify-content:center;padding:4px 0}
+.word{display:inline-flex;gap:2px;padding:3px 5px;border-radius:6px;background:rgba(0,0,0,.18)}
+.glyph{color:#e8d9b4;filter:drop-shadow(0 1px 1px rgba(0,0,0,.8))}
+.glyph-btn{background:transparent;border:1px solid transparent;border-radius:8px;cursor:pointer;padding:3px;transition:all .15s}
+.glyph-btn:hover{border-color:var(--amber);background:rgba(217,164,65,.08)}
+.glyph-btn.picked{border-color:var(--ok);background:rgba(127,191,127,.12)}
+.glyph-btn.used{opacity:.22;pointer-events:none}
+
+/* ---------- interactions ---------- */
+.quiz{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:18px 20px;margin:16px 0}
+.quiz h3{font-size:15.5px;color:var(--amber);letter-spacing:1px;margin-bottom:10px}
+.inrow{display:flex;gap:16px;flex-wrap:wrap;align-items:center;margin:8px 0}
+.inrow label{display:flex;align-items:center;gap:8px;color:#cfc5ad;font-size:14.5px}
+.inrow input{
+  width:84px;background:#14100b;border:1px solid var(--line);color:var(--ink);
+  padding:7px 10px;border-radius:7px;font-size:15px;text-align:center;font-family:inherit;
+}
+.feedback{margin-top:10px;font-size:14px;min-height:22px;letter-spacing:1px}
+.feedback.ok{color:var(--ok)} .feedback.bad{color:var(--bad)}
+.shake{animation:shake .4s}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+
+.match-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-top:10px}
+.match-col{display:flex;flex-direction:column;gap:10px}
+.mcard{
+  background:#17120c;border:1px solid var(--line);border-radius:10px;padding:8px 12px;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;min-height:54px;
+  font-size:16px;letter-spacing:3px;transition:all .15s;user-select:none;
+}
+.mcard:hover{border-color:var(--amber)}
+.mcard.sel{border-color:var(--amber2);background:rgba(217,164,65,.1);box-shadow:0 0 0 1px var(--amber2)}
+.mcard.done{border-color:var(--ok);background:rgba(127,191,127,.08);cursor:default;opacity:.85}
+.mcard.done:hover{border-color:var(--ok)}
+
+.composer{margin-top:8px}
+.answer-strip{
+  min-height:66px;border:1px dashed #5a4c33;border-radius:10px;background:rgba(0,0,0,.25);
+  display:flex;align-items:center;gap:6px;padding:8px 12px;flex-wrap:wrap;margin:10px 0;
+}
+.answer-strip .ph{color:#6d6049;font-size:13px;letter-spacing:2px}
+.palette{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.chip{
+  background:#17120c;border:1px solid var(--line);color:var(--ink);border-radius:8px;
+  padding:7px 14px;font-size:15px;cursor:pointer;font-family:inherit;letter-spacing:2px;transition:all .15s;
+}
+.chip:hover{border-color:var(--amber)}
+.chip.used{opacity:.22;pointer-events:none}
+.chip.in-answer{background:rgba(217,164,65,.12);border-color:var(--amber)}
+.ctrl{display:flex;gap:10px;margin-top:6px;align-items:center}
+.hintbox{margin-top:12px;color:#c9b98c;font-size:14px;background:rgba(217,164,65,.06);border:1px dashed #5a4c33;border-radius:8px;padding:10px 14px;display:none}
+
+/* ---------- notebook ---------- */
+#notebook{
+  position:sticky;top:20px;background:var(--panel);border:1px solid var(--line);
+  border-radius:14px;padding:22px 22px;max-height:calc(100vh - 40px);overflow:auto;
+}
+#notebook h2{color:var(--amber2);font-size:17px;letter-spacing:4px;border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:12px}
+.note{margin-bottom:16px;animation:fadein .6s ease}
+.note h4{color:var(--amber);font-size:13.5px;letter-spacing:2px;margin-bottom:6px}
+.note .nbody{font-size:13px;color:#cfc5ad}
+.note table{border-collapse:collapse;width:100%}
+.note td{border-bottom:1px solid #2e2719;padding:3px 4px;font-size:12.5px;vertical-align:middle}
+.note .rm{color:#8d8168;font-style:italic}
+.empty-note{color:#6d6049;font-size:13px;letter-spacing:1px}
+
+/* ---------- ending ---------- */
+#ending .story{
+  background:linear-gradient(180deg,#201a12,#17120c);border:1px solid #4a3f2c;border-radius:12px;
+  padding:26px 30px;margin:18px 0;font-size:17px;line-height:2.2;letter-spacing:2px;color:#ecdfbe;text-align:center;
+}
+.cert{
+  border:2px solid var(--amber);border-radius:12px;padding:28px 30px;margin:20px 0;text-align:center;
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(217,164,65,.08), transparent 70%), #17120c;
+}
+.cert h3{color:var(--amber2);letter-spacing:8px;font-size:20px;margin-bottom:12px}
+.cert .big{font-size:26px;color:#f4e6c2;letter-spacing:4px;margin:10px 0}
+.cert .meta{color:var(--dim);font-size:13px;letter-spacing:2px;margin-top:10px}
+.cert .rank{font-size:40px;color:var(--amber2);text-shadow:0 0 22px rgba(217,164,65,.5);margin:6px 0}
+details.about{margin-top:22px;border:1px solid var(--line);border-radius:10px;padding:14px 18px;background:var(--panel2)}
+details.about summary{cursor:pointer;color:var(--amber);letter-spacing:2px;font-size:14.5px}
+details.about p{font-size:13.5px;color:#c6bba2;margin:8px 0}
+.small{font-size:12px;color:#7c7158;text-align:center;margin-top:40px;letter-spacing:1px}
+</style>
+</head>
+<body>
+<canvas id="dust"></canvas>
+
+<!-- ======================= INTRO ======================= -->
+<div id="intro">
+  <div class="card">
+    <h1>沉没的澜屿</h1>
+    <div class="en">THE LANYU TABLETS · A DECIPHERMENT</div>
+    <p>2026年，深潜器「烛龙号」在南太平洋三千米深的海底高原上，发现了一座被玄武岩掩埋的石殿。殿中出土十余块泥板，刻满从未见于任何文明记录的符文。</p>
+    <p>碳测定显示：这座岛屿在一夜之间沉入海底。而泥板，是那个文明留给世界的最后遗言。</p>
+    <p>您将扮演首席译解官。没有字典，没有前人注释——只有泥板上的图画、数字与残句。请像真正的语言学家那样，<b style="color:var(--amber2)">从零破译这门语言</b>，读出澜屿人最后写下的话。</p>
+    <div class="name-row">
+      <input id="scholarName" placeholder="署名（可留空）" maxlength="12">
+      <button class="btn" id="startBtn">进入遗址</button>
+    </div>
+    <p style="text-align:center;color:#6d6049;font-size:12.5px;letter-spacing:1px">本谜题完全可通过逻辑推理解出，无需任何外部知识</p>
+  </div>
+</div>
+
+<div class="wrap">
+  <header>
+    <h1>沉没的澜屿</h1>
+    <div class="sub">澜 屿 泥 板 译 解 档 案 · 编 号 LY-2026-XII</div>
+    <div class="rule"></div>
+  </header>
+
+  <div id="main">
+    <div id="left">
+
+      <!-- ============ STAGE 1 ============ -->
+      <section class="stage locked" id="s1">
+        <h2>第一章 · 粮仓的账目</h2>
+        <div class="tag">STAGE I — 数字系统</div>
+        <p class="narr">这几块泥板出土于石殿东侧的粮仓。幸运的是：记账的书吏在符文旁刻下了对应实物的图画——这正是我们的突破口。</p>
+        <div class="tablets" id="t-count"></div>
+        <div class="quiz">
+          <h3>⟡ 推理：澜屿人的记数法</h3>
+          <p>对照图画中实物的数量与泥板上的计数符号，推断每个符号代表的数值。</p>
+          <div class="inrow">
+            <label>符号 <span id="q1-g1"></span> 的数值 = <input id="in-tick" inputmode="numeric"></label>
+            <label>符号 <span id="q1-g5"></span> 的数值 = <input id="in-chev" inputmode="numeric"></label>
+          </div>
+          <p style="margin-top:14px">下面这块泥板出土时图画部分已残损，只余符文。书吏究竟记录了多少只陶罐？</p>
+          <div class="tablets"><div class="tablet"><div class="cap">残板 · 编号 LY-07</div><div class="gline" id="t-challenge"></div><div class="foot">（图画部分残损）</div></div></div>
+          <div class="inrow"><label>陶罐数量 = <input id="in-total" inputmode="numeric"></label>
+            <button class="btn" id="check1">核验推论</button>
+            <button class="btn ghost" data-hint="h1">请求提示</button>
+          </div>
+          <div class="hintbox" id="h1"></div>
+          <div class="feedback" id="fb1"></div>
+        </div>
+      </section>
+
+      <!-- ============ STAGE 2 ============ -->
+      <section class="stage locked" id="s2">
+        <h2>第二章 · 神殿的壁刻</h2>
+        <div class="tag">STAGE II — 词汇与复数</div>
+        <p class="narr">石殿内壁刻着八个大符，旁边残存着褪色的壁画。符文的形态往往源于它所描绘之物——请将每个符文与它的含义配对。</p>
+        <div class="quiz">
+          <h3>⟡ 配对：八个圣符</h3>
+          <p style="color:var(--dim);font-size:13.5px">点击左侧一个符文，再点击右侧一个含义。配对正确则锁定。</p>
+          <div class="match-grid">
+            <div class="match-col" id="mc-glyphs"></div>
+            <div class="match-col" id="mc-means"></div>
+          </div>
+          <div class="ctrl" style="margin-top:14px"><button class="btn ghost" data-hint="h2a">请求提示</button></div>
+          <div class="hintbox" id="h2a"></div>
+          <div class="feedback" id="fb2a"></div>
+        </div>
+        <div class="quiz" id="plural-quiz" style="display:none">
+          <h3>⟡ 推理：复数的秘密</h3>
+          <p>渔获记录中出现了两块耐人寻味的泥板：</p>
+          <div class="tablets" id="t-plural"></div>
+          <p>看来某个后缀符号改变了词的数量属性。那么，「<b style="color:var(--amber2)">众船（许多船）</b>」在澜屿文中应当如何书写？请从符盘中依序选取：</p>
+          <div class="composer" id="comp-plural"></div>
+          <div class="hintbox" id="h2b"></div>
+        </div>
+      </section>
+
+      <!-- ============ STAGE 3 ============ -->
+      <section class="stage locked" id="s3">
+        <h2>第三章 · 先行者的笔记</h2>
+        <div class="tag">STAGE III — 语法结构</div>
+        <p class="narr">档案馆里找到了一位已故学者的遗稿——他生前曾译出四个短句，却未及发表便离世了。这是我们唯一的「双语对照」。</p>
+        <div class="tablets" id="t-rosetta"></div>
+        <div class="quiz" id="q3-click">
+          <h3>⟡ 第一问：动词在哪里？</h3>
+          <p id="q3-prompt">在下面这句（R1「国王给出了鱼群」）中，<b style="color:var(--amber2)">点击表示「给」的符号</b>。<br><span style="color:var(--dim);font-size:13px">提示在句与句的对照之间。</span></p>
+          <div class="gline" id="q3-sentence" style="justify-content:flex-start;margin-top:10px"></div>
+          <div class="ctrl"><button class="btn ghost" data-hint="h3a">请求提示</button></div>
+          <div class="hintbox" id="h3a"></div>
+          <div class="feedback" id="fb3a"></div>
+        </div>
+        <div class="quiz" id="q3-compose" style="display:none">
+          <h3>⟡ 第三问：你已学会这门语言的骨架</h3>
+          <p>请用符盘写出整句：「<b style="color:var(--amber2)">人们看见了国王的船</b>」<br>
+          <span style="color:var(--dim);font-size:13px">注意澜屿语的语序与汉语不同；「的」与「了」都有专属符号。</span></p>
+          <div class="composer" id="comp-sent"></div>
+          <div class="hintbox" id="h3b"></div>
+        </div>
+      </section>
+
+      <!-- ============ STAGE 4 ============ -->
+      <section class="stage locked" id="s4">
+        <h2>终章 · 最后的铭文</h2>
+        <div class="tag">STAGE IV — 全文译解</div>
+        <p class="narr">石殿中央的祭坛上，立着最后一块、也是最大的一块泥板。顶端刻着一幅图画：巨浪之中，一座山峰正没入水面，天上是锯齿状的闪电。泥板上有两个你从未见过的符号——结合图画与上下文，它们的含义并不难猜。</p>
+        <div class="tablets"><div class="tablet" style="flex:1"><div class="cap">祭坛铭文 · 编号 LY-01「澜屿纪事」</div><div id="t-final"></div></div></div>
+        <div id="final-lines"></div>
+        <div class="ctrl" style="margin-top:4px"><button class="btn ghost" data-hint="h4">请求提示</button></div>
+        <div class="hintbox" id="h4"></div>
+      </section>
+
+      <!-- ============ ENDING ============ -->
+      <section class="stage locked" id="ending">
+        <h2>尾声 · 重见天日</h2>
+        <div class="tag">EPILOGUE</div>
+        <p class="narr">当最后一行译文被确认时，整块泥板仿佛在灯下微微发亮。三千年前沉入海底的声音，重新被人类听见。</p>
+        <div class="story" id="story-text"></div>
+        <p style="color:#bfb49a;font-size:14.5px">没有哀嚎，没有诅咒。澜屿人在岛屿沉没的前夜写下的，是一份平静的记录：国王散尽船只，人民渡海求生，而日月星辰始终注视着他们——无论他们漂向何方。这门语言沉默了三千年，今天，它由您亲手唤醒。</p>
+        <div class="cert">
+          <h3>译 解 官 任 命 状</h3>
+          <div class="rank" id="cert-rank">S</div>
+          <div class="big" id="cert-name">无名学者</div>
+          <div style="color:#cfc5ad;letter-spacing:3px">成功破译澜屿文 · 全部四章</div>
+          <div class="meta" id="cert-meta"></div>
+        </div>
+        <details class="about">
+          <summary>关于「译典测试」——这个基准为何是首创</summary>
+          <p>这是一次为展示模型综合能力而自行设计的测试（Decipherment Bench）。它要求模型在一次生成中同时完成四件通常互相冲突的事：</p>
+          <p><b>① 形式系统设计</b> —— 从零发明一门语言：二十余个原创符文字形（全部为手写 SVG 路径）、五进制记数、SOV 语序、复数后缀 -ki、属格助词 ya、过去时后缀 -ta。所有泥板文本均由同一份词典数据渲染生成，语言自洽性由构造保证。</p>
+          <p><b>② 谜题可解性设计</b> —— 像国际语言学奥林匹克赛题一样，每个答案都必须能被纯逻辑推出：数字由图画对照锚定，词义由字形象形锚定，语法由双语残片的最小对立对（R1/R2 共享词尾 → -ta 为后缀）锚定。终章甚至埋了一个时态陷阱：末句没有 -ta，所以必须译为「注视着」而非「看见了」。</p>
+          <p><b>③ 单文件工程</b> —— 无依赖、离线可运行的交互系统：配对、点选、符盘组句、碎片排序四种题型，进度解锁、学者笔记自动归档、提示与评级系统、粒子氛围与音效。</p>
+          <p><b>④ 叙事设计</b> —— 谜题的终点不是「通关」，而是读出一个文明的遗言。解谜的过程即是故事本身。</p>
+          <p style="color:#8d8168">——由 Claude（Fable 5）于 2026-10-14 一次性生成。</p>
+        </details>
+      </section>
+
+    </div>
+
+    <!-- ============ NOTEBOOK ============ -->
+    <aside id="notebook">
+      <h2>学者笔记</h2>
+      <div id="notes"><div class="empty-note">尚无已确认的发现。<br>每完成一章，结论将自动归档于此。</div></div>
+    </aside>
+  </div>
+
+  <div class="small">沉没的澜屿 · 译典测试 (Decipherment Bench) · 单文件 · 无外部依赖 · 可离线运行</div>
+</div>
+
+<script>
+'use strict';
+/* =====================================================================
+   澜屿文 —— 单一数据源：所有泥板、题目、校验均由此词典渲染生成，
+   语言的自洽性由构造保证（single source of truth）。
+   ===================================================================== */
+function spiralPath(cx, cy, turns, maxR){
+  let p = 'M' + cx + ' ' + cy;
+  const total = turns * 2 * Math.PI;
+  for (let a = 0.25; a <= total; a += 0.22){
+    const r = maxR * a / total;
+    p += ' L' + (cx + r * Math.cos(a)).toFixed(1) + ' ' + (cy + r * Math.sin(a)).toFixed(1);
+  }
+  return p;
+}
+
+const GLYPHS = {
+  /* 名词 */
+  kora:{label:'鱼',   roman:'kora', d:['M18 50 Q40 30 62 42 Q72 48 62 58 Q40 70 18 50 Z','M62 42 L82 28','M62 58 L82 72'], dots:[[32,48,3.5]]},
+  mun: {label:'陶罐', roman:'mun',  d:['M38 20 L62 20','M42 20 L38 32 Q28 52 38 72 Q50 84 62 72 Q72 52 62 32 L58 20','M38 36 Q28 42 36 50','M62 36 Q72 42 64 50']},
+  sel: {label:'谷物', roman:'sel',  d:['M50 86 L50 28','M50 42 L36 28','M50 42 L64 28','M50 56 L34 44','M50 56 L66 44','M50 70 L32 60','M50 70 L68 60']},
+  tav: {label:'船',   roman:'tav',  d:['M16 58 Q50 72 84 58 L74 76 Q50 86 26 76 Z','M50 60 L50 20','M50 22 L76 44 L50 48 Z']},
+  lan: {label:'大海', roman:'lan',  d:['M18 34 Q28 26 38 34 T58 34 T78 34','M18 52 Q28 44 38 52 T58 52 T78 52','M18 70 Q28 62 38 70 T58 70 T78 70']},
+  ish: {label:'月亮', roman:'ish',  d:['F:M60 14 A36 36 0 1 0 60 86 A46 46 0 0 1 60 14 Z']},
+  sor: {label:'太阳', roman:'sor',  d:['M50 50 m-15 0 a15 15 0 1 0 30 0 a15 15 0 1 0 -30 0','M50 28 L50 16','M50 72 L50 84','M28 50 L16 50','M72 50 L84 50','M66 34 L74 26','M34 66 L26 74','M66 66 L74 74','M34 34 L26 26']},
+  veth:{label:'国王', roman:'veth', d:['M50 30 m-8 0 a8 8 0 1 0 16 0 a8 8 0 1 0 -16 0','M50 38 L50 70','M50 70 L38 88','M50 70 L62 88','M30 54 L50 46 L70 54','M42 20 L42 9','M50 18 L50 5','M58 20 L58 9']},
+  dar: {label:'人',   roman:'dar',  d:['M50 26 m-8 0 a8 8 0 1 0 16 0 a8 8 0 1 0 -16 0','M50 34 L50 68','M50 68 L38 86','M50 68 L62 86','M32 52 L50 44 L68 52']},
+  anu: {label:'岛屿', roman:'anu',  d:['M30 62 L50 26 L70 62','M14 72 Q25 64 36 72 T58 72 T80 72']},
+  mir: {label:'星',   roman:'mir',  d:['M50 14 L57 43 L86 50 L57 57 L50 86 L43 57 L14 50 L43 43 Z']},
+  ruk: {label:'风暴', roman:'ruk',  d:['M22 28 Q32 18 42 26 Q52 14 62 24 Q72 18 80 28','M56 34 L42 56 L56 56 L38 84']},
+  gol: {label:'吞没', roman:'gol',  d:['M16 42 Q27 34 38 42 T60 42 T82 42','M34 84 L50 52 L66 84']},
+  /* 动词 */
+  daru:{label:'给',   roman:'daru', d:['M28 58 Q50 78 72 58','M28 58 L23 46','M72 58 L77 46'], dots:[[50,36,6]]},
+  oku: {label:'看／注视', roman:'oku', d:['M18 50 Q50 26 82 50 Q50 74 18 50 Z'], dots:[[50,50,7]]},
+  tema:{label:'航行', roman:'tema', d:['M18 44 L70 44','M56 30 L74 44 L56 58','M24 72 Q34 64 44 72 T64 72']},
+  /* 语法符号 */
+  ki:  {label:'复数后缀', roman:'-ki', d:['M36 32 L54 50 L36 68','M54 32 L72 50 L54 68']},
+  ya:  {label:'属格「的」', roman:'ya', d:['M50 26 Q72 50 50 74 Q28 50 50 26 Z'], dots:[[50,50,4]]},
+  ta:  {label:'过去后缀「了」', roman:'-ta', d:['M58 28 Q72 44 60 58 Q50 72 36 70'], dots:[[58,28,4.5]]},
+  /* 数字 */
+  n1:  {label:'一', roman:'1',  d:['M50 24 L50 76']},
+  n5:  {label:'五', roman:'5',  d:['M30 68 L50 30 L70 68']},
+  n25: {label:'二十五', roman:'25', d:[spiralPath(50,50,2.2,27)]}
+};
+
+/* ---------- 渲染 ---------- */
+function glyphSVG(id, size, extraCls){
+  const g = GLYPHS[id];
+  size = size || 44;
+  let inner = '';
+  for (const raw of g.d){
+    if (raw.startsWith('F:')){
+      inner += '<path d="' + raw.slice(2) + '" fill="currentColor" stroke="none"/>';
+    } else {
+      inner += '<path d="' + raw + '" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>';
+    }
+  }
+  if (g.dots) for (const [x,y,r] of g.dots) inner += '<circle cx="'+x+'" cy="'+y+'" r="'+r+'" fill="currentColor"/>';
+  return '<svg class="glyph '+(extraCls||'')+'" width="'+size+'" height="'+size+'" viewBox="0 0 100 100" aria-label="'+g.roman+'">'+inner+'</svg>';
+}
+function wordHTML(ids, size){
+  return '<span class="word">' + ids.map(i => glyphSVG(i, size)).join('') + '</span>';
+}
+function sentenceHTML(words, size){
+  return words.map(w => wordHTML(w, size)).join('');
+}
+function numToGlyphs(n){
+  const out = [];
+  while (n >= 25){ out.push('n25'); n -= 25; }
+  while (n >= 5){ out.push('n5'); n -= 5; }
+  while (n >= 1){ out.push('n1'); n -= 1; }
+  return out;
+}
+function el(html){
+  const t = document.createElement('template');
+  t.innerHTML = html.trim();
+  return t.content.firstChild;
+}
+function shuffle(arr){
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+/* ---------- 全局状态 ---------- */
+const S = { errors:0, hints:0, start:0, notes:0 };
+
+function chime(good){
+  try{
+    const ctx = chime.ctx || (chime.ctx = new (window.AudioContext||window.webkitAudioContext)());
+    const now = ctx.currentTime;
+    const freqs = good ? [523.25, 783.99] : [196, 155.56];
+    freqs.forEach((f, i) => {
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = 'sine'; o.frequency.value = f;
+      g.gain.setValueAtTime(0.0001, now + i*0.09);
+      g.gain.exponentialRampToValueAtTime(0.12, now + i*0.09 + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, now + i*0.09 + 0.6);
+      o.connect(g); g.connect(ctx.destination);
+      o.start(now + i*0.09); o.stop(now + i*0.09 + 0.7);
+    });
+  }catch(e){}
+}
+
+function addNote(title, bodyHTML){
+  const box = document.getElementById('notes');
+  if (S.notes === 0) box.innerHTML = '';
+  S.notes++;
+  box.appendChild(el('<div class="note"><h4>◈ ' + title + '</h4><div class="nbody">' + bodyHTML + '</div></div>'));
+}
+
+function unlockStage(id){
+  const sec = document.getElementById(id);
+  sec.classList.remove('locked');
+  sec.classList.add('unlocked');
+  setTimeout(() => sec.scrollIntoView({behavior:'smooth', block:'start'}), 150);
+}
+
+function setFB(id, ok, msg){
+  const f = document.getElementById(id);
+  f.className = 'feedback ' + (ok ? 'ok' : 'bad');
+  f.textContent = msg;
+  if (!ok){ S.errors++; f.classList.add('shake'); setTimeout(()=>f.classList.remove('shake'), 450); }
+  chime(ok);
+}
+
+/* ---------- 提示系统 ---------- */
+const HINTS = {
+  h1: '每块完好泥板的图画数量与计数符号一一对应。竖线「|」是最小单位；数一数：七条鱼用了几个「^」几个「|」？—— 7 = 5 + 1 + 1。那么残板上的 3 个「^」加 4 个「|」是多少？',
+  h2a:'符文源于图画：带光芒的圆是太阳，弯钩是月亮残缺的形状，波浪线是海，山峰立于浪上即是岛。两个人形符文中，头戴三叉之冠者为王。',
+  h2b:'对照两块渔获泥板：一条鱼时只写「鱼」符；许多鱼时，「鱼」符后多了一个双折符号。把同样的后缀接在「船」符之后即可。',
+  h3a:'对照 R1 与 R2：两句都以「过去发生的动作」结尾，且句末都有同一个小尾符。去掉这个共同的尾符，R1 剩下的最后一个符号只能是动词「给」。',
+  h3b:'澜屿语是「主语—宾语—动词」语序。「国王的船」依照 R3 写作：国王 + ya + 船。整句共七个符号：人-复数 ／ 王-ya-船 ／ 看-了。',
+  h4: '两个新符号：锯齿闪电出现在图画的天空中，浪下沉没的山峰呼应「岛」符——其一为「风暴」，其一为「吞没」。另注意末句句尾没有「-ta」，动作并未结束：日月群星至今仍在「注视着」。'
+};
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-hint]');
+  if (!b) return;
+  const box = document.getElementById(b.dataset.hint);
+  if (box.style.display !== 'block'){ S.hints++; box.style.display = 'block'; box.textContent = '🕯 ' + HINTS[b.dataset.hint]; }
+});
+
+/* =====================================================================
+   通用组件：符盘 / 碎片 组句器
+   items: [{key, html}], answer: [keys], mount: 容器id
+   ===================================================================== */
+function makeComposer(opts){
+  const mount = document.getElementById(opts.mount);
+  mount.innerHTML = '';
+  const strip = el('<div class="answer-strip"><span class="ph">— 依次点击下方符盘 · 点击已选项可撤回 —</span></div>');
+  const pal = el('<div class="palette"></div>');
+  const ctrl = el('<div class="ctrl"></div>');
+  const fb = el('<div class="feedback"></div>');
+  const chosen = []; // palette indices in order
+  const items = opts.items;
+
+  function renderStrip(){
+    strip.innerHTML = '';
+    if (!chosen.length){ strip.appendChild(el('<span class="ph">— 依次点击下方符盘 · 点击已选项可撤回 —</span>')); return; }
+    chosen.forEach((pi, pos) => {
+      const c = el('<span class="chip in-answer" style="cursor:pointer">' + items[pi].html + '</span>');
+      c.onclick = () => {
+        chosen.splice(pos, 1);
+        pal.children[pi].classList.remove('used');
+        renderStrip();
+      };
+      strip.appendChild(c);
+    });
+  }
+  items.forEach((it, i) => {
+    const b = el('<button class="chip">' + it.html + '</button>');
+    b.onclick = () => {
+      if (b.classList.contains('used')) return;
+      b.classList.add('used');
+      chosen.push(i);
+      renderStrip();
+    };
+    pal.appendChild(b);
+  });
+  const clearBtn = el('<button class="btn ghost">清空</button>');
+  clearBtn.onclick = () => {
+    chosen.length = 0;
+    [...pal.children].forEach(c => c.classList.remove('used'));
+    renderStrip();
+  };
+  const checkBtn = el('<button class="btn">' + (opts.checkLabel || '核验') + '</button>');
+  checkBtn.onclick = () => {
+    const keys = chosen.map(i => items[i].key);
+    const ok = keys.length === opts.answer.length && keys.every((k, i) => k === opts.answer[i]);
+    if (ok){
+      fb.className = 'feedback ok'; fb.textContent = opts.okMsg || '✓ 正确！';
+      chime(true);
+      checkBtn.disabled = true; clearBtn.disabled = true;
+      [...pal.children].forEach(c => c.style.pointerEvents = 'none');
+      [...strip.querySelectorAll('.chip')].forEach(c => c.style.pointerEvents = 'none');
+      opts.onOK && opts.onOK();
+    } else {
+      fb.className = 'feedback bad'; fb.textContent = '✗ 与铭文规则不符，请再想想。';
+      S.errors++; chime(false);
+      strip.classList.add('shake'); setTimeout(()=>strip.classList.remove('shake'), 450);
+    }
+  };
+  ctrl.appendChild(clearBtn); ctrl.appendChild(checkBtn);
+  mount.appendChild(strip); mount.appendChild(pal); mount.appendChild(ctrl); mount.appendChild(fb);
+}
+
+/* =====================================================================
+   STAGE 1 — 数字系统
+   ===================================================================== */
+function buildStage1(){
+  const data = [
+    {word:'kora', n:3,  cap:'泥板 LY-03 · 渔获'},
+    {word:'kora', n:7,  cap:'泥板 LY-04 · 渔获'},
+    {word:'mun',  n:12, cap:'泥板 LY-05 · 库存'},
+    {word:'sel',  n:25, cap:'泥板 LY-06 · 谷仓'}
+  ];
+  const box = document.getElementById('t-count');
+  data.forEach(d => {
+    let picto = '';
+    for (let i = 0; i < d.n; i++) picto += glyphSVG(d.word, d.n > 15 ? 18 : 26, '');
+    const t = el('<div class="tablet"><div class="cap">' + d.cap + '</div>' +
+      '<div class="picto" style="color:#b2763a">' + picto + '</div>' +
+      '<div class="gline">' + wordHTML([d.word], 40) + wordHTML(numToGlyphs(d.n), 34) + '</div></div>');
+    box.appendChild(t);
+  });
+  document.getElementById('q1-g1').innerHTML = glyphSVG('n1', 26);
+  document.getElementById('q1-g5').innerHTML = glyphSVG('n5', 26);
+  document.getElementById('t-challenge').innerHTML = wordHTML(['mun'], 40) + wordHTML(numToGlyphs(19), 34);
+
+  document.getElementById('check1').onclick = () => {
+    const v1 = +document.getElementById('in-tick').value;
+    const v5 = +document.getElementById('in-chev').value;
+    const vt = +document.getElementById('in-total').value;
+    if (v1 === 1 && v5 === 5 && vt === 19){
+      setFB('fb1', true, '✓ 完全正确！澜屿人使用五进制记数：| = 1，^ = 5，涡旋 = 25（见谷仓泥板：5×5 粒谷）。残板记录了 19 只陶罐。');
+      addNote('数字系统（五进制）',
+        '<table><tr><td>' + glyphSVG('n1',22) + '</td><td>= 1</td></tr>' +
+        '<tr><td>' + glyphSVG('n5',22) + '</td><td>= 5</td></tr>' +
+        '<tr><td>' + glyphSVG('n25',22) + '</td><td>= 25</td></tr></table>' +
+        '数值由大到小累加书写。<br>已识单词：' +
+        glyphSVG('kora',20) + ' 鱼 <span class="rm">kora</span> · ' +
+        glyphSVG('mun',20) + ' 陶罐 <span class="rm">mun</span> · ' +
+        glyphSVG('sel',20) + ' 谷物 <span class="rm">sel</span>');
+      document.getElementById('check1').disabled = true;
+      unlockStage('s2');
+      buildStage2();
+    } else {
+      setFB('fb1', false, '✗ 有误。请重新对照图画数量与符号组合。');
+    }
+  };
+}
+
+/* =====================================================================
+   STAGE 2 — 词汇配对 + 复数
+   ===================================================================== */
+const MATCH = [
+  ['sor','太阳'], ['ish','月亮'], ['tav','船'], ['lan','大海'],
+  ['veth','国王'], ['dar','人'], ['anu','岛屿'], ['mir','星']
+];
+function buildStage2(){
+  const gcol = document.getElementById('mc-glyphs');
+  const mcol = document.getElementById('mc-means');
+  const pairs = Object.fromEntries(MATCH);
+  let selG = null, selM = null, done = 0;
+
+  shuffle(MATCH.map(m => m[0])).forEach(gid => {
+    const c = el('<div class="mcard" data-g="' + gid + '">' + glyphSVG(gid, 44) + '</div>');
+    c.onclick = () => { if (c.classList.contains('done')) return;
+      if (selG) selG.classList.remove('sel');
+      selG = c; c.classList.add('sel'); tryPair(); };
+    gcol.appendChild(c);
+  });
+  shuffle(MATCH.map(m => m[1])).forEach(mean => {
+    const c = el('<div class="mcard" data-m="' + mean + '">' + mean + '</div>');
+    c.onclick = () => { if (c.classList.contains('done')) return;
+      if (selM) selM.classList.remove('sel');
+      selM = c; c.classList.add('sel'); tryPair(); };
+    mcol.appendChild(c);
+  });
+
+  function tryPair(){
+    if (!selG || !selM) return;
+    const g = selG, m = selM;
+    selG = selM = null;
+    g.classList.remove('sel'); m.classList.remove('sel');
+    if (pairs[g.dataset.g] === m.dataset.m){
+      g.classList.add('done'); m.classList.add('done');
+      chime(true);
+      done++;
+      if (done === MATCH.length){
+        document.getElementById('fb2a').className = 'feedback ok';
+        document.getElementById('fb2a').textContent = '✓ 八个圣符全部识读完成！壁刻之下又发现了两块渔获泥板……';
+        buildPluralQuiz();
+      }
+    } else {
+      S.errors++; chime(false);
+      g.classList.add('shake'); m.classList.add('shake');
+      setTimeout(() => { g.classList.remove('shake'); m.classList.remove('shake'); }, 450);
+    }
+  }
+}
+
+function buildPluralQuiz(){
+  const q = document.getElementById('plural-quiz');
+  q.style.display = 'block';
+  const box = document.getElementById('t-plural');
+  box.innerHTML = '';
+  box.appendChild(el('<div class="tablet"><div class="cap">泥板 LY-08</div>' +
+    '<div class="picto" style="color:#b2763a">' + glyphSVG('kora',28) + '</div>' +
+    '<div class="gline">' + wordHTML(['kora'],40) + '</div></div>'));
+  box.appendChild(el('<div class="tablet"><div class="cap">泥板 LY-09</div>' +
+    '<div class="picto" style="color:#b2763a">' + glyphSVG('kora',24)+glyphSVG('kora',24)+glyphSVG('kora',24)+glyphSVG('kora',24) + '</div>' +
+    '<div class="gline">' + wordHTML(['kora','ki'],40) + '</div></div>'));
+
+  const paletteIds = shuffle(['tav','ki','kora','mun','lan','n5']);
+  makeComposer({
+    mount:'comp-plural',
+    items: paletteIds.map(id => ({key:id, html:glyphSVG(id, 36)})),
+    answer:['tav','ki'],
+    okMsg:'✓ 正确！tav-ki ——「众船」。后缀 -ki 表示复数。',
+    onOK(){
+      addNote('神殿词汇 + 复数后缀',
+        '<table>' + MATCH.map(([g,m]) => '<tr><td>'+glyphSVG(g,20)+'</td><td>'+m+' <span class="rm">'+GLYPHS[g].roman+'</span></td></tr>').join('') +
+        '<tr><td>'+glyphSVG('ki',20)+'</td><td>复数后缀 <span class="rm">-ki</span>（接于名词后）</td></tr></table>');
+      unlockStage('s3');
+      buildStage3();
+    }
+  });
+  q.scrollIntoView({behavior:'smooth', block:'center'});
+}
+
+/* =====================================================================
+   STAGE 3 — 语法：罗塞塔残片 + 点选 + 组句
+   ===================================================================== */
+const ROSETTA = [
+  {words:[['veth'],['kora','ki'],['daru','ta']], zh:'「国王给出了鱼群。」', id:'R1'},
+  {words:[['dar','ki'],['tav'],['oku','ta']],    zh:'「人们看见了船。」',   id:'R2'},
+  {words:[['veth'],['ya'],['tav']],              zh:'「国王之船。」',       id:'R3'},
+  {words:[['tav','ki'],['lan'],['tema']],        zh:'「众船航行于大海之上。」', id:'R4'}
+];
+function buildStage3(){
+  const box = document.getElementById('t-rosetta');
+  box.innerHTML = '';
+  ROSETTA.forEach(r => {
+    box.appendChild(el('<div class="tablet" style="min-width:230px"><div class="cap">残片 ' + r.id + '</div>' +
+      '<div class="gline">' + sentenceHTML(r.words, 34) + '</div>' +
+      '<div class="foot" style="color:#c9b98c">' + r.zh + '</div></div>'));
+  });
+
+  // 点选题：先找「给」(daru)，再找过去后缀 (ta)
+  const sent = document.getElementById('q3-sentence');
+  sent.innerHTML = '';
+  const flat = [];
+  ROSETTA[0].words.forEach(w => w.forEach(g => flat.push(g)));
+  let step = 0; // 0: find daru, 1: find ta, 2: done
+  flat.forEach(gid => {
+    const b = el('<button class="glyph-btn">' + glyphSVG(gid, 42) + '</button>');
+    b.onclick = () => {
+      if (step === 0){
+        if (gid === 'daru'){
+          b.classList.add('picked'); chime(true); step = 1;
+          document.getElementById('q3-prompt').innerHTML =
+            '✓ 很好——R1 与 R2 句末共享同一个尾符，去掉它，剩下的就是动词。<br>第二问：现在<b style="color:var(--amber2)">点击表示「已经发生（过去／了）」的后缀符号</b>。';
+          setFB('fb3a', true, '✓ 已锁定动词「给」(daru)。');
+        } else setFB('fb3a', false, '✗ 这不是「给」。对照 R1 与 R2 的共同点再试。');
+      } else if (step === 1){
+        if (gid === 'ta'){
+          b.classList.add('picked'); chime(true); step = 2;
+          setFB('fb3a', true, '✓ 正确！尾符 -ta 表示动作已经完成——澜屿语的「了」。');
+          document.getElementById('q3-compose').style.display = 'block';
+          buildSentComposer();
+        } else setFB('fb3a', false, '✗ 不对。R1 和 R2 都是过去发生的事，找它们共有的句末符号。');
+      }
+    };
+    sent.appendChild(b);
+  });
+}
+function buildSentComposer(){
+  const paletteIds = shuffle(['dar','ki','veth','ya','tav','oku','ta','kora','daru','sor']);
+  makeComposer({
+    mount:'comp-sent',
+    items: paletteIds.map(id => ({key:id, html:glyphSVG(id, 36)})),
+    answer:['dar','ki','veth','ya','tav','oku','ta'],
+    okMsg:'✓ 完美！dar-ki veth-ya-tav oku-ta ——「人们看见了国王的船」。你已掌握澜屿语的全部语法。',
+    onOK(){
+      addNote('语法结构',
+        '① 语序：<b>主语 — 宾语 — 动词</b>（SOV）<br>' +
+        '② ' + glyphSVG('ya',18) + ' <span class="rm">ya</span>：属格「的」，置于领属者与被领属者之间<br>' +
+        '③ ' + glyphSVG('ta',18) + ' <span class="rm">-ta</span>：过去后缀「了」，接于动词后；<b>无 -ta 则为正在进行</b><br>' +
+        '④ 动词：' + glyphSVG('daru',18) + ' 给 <span class="rm">daru</span> · ' + glyphSVG('oku',18) + ' 看/注视 <span class="rm">oku</span> · ' + glyphSVG('tema',18) + ' 航行 <span class="rm">tema</span>');
+      unlockStage('s4');
+      buildStage4();
+    }
+  });
+  document.getElementById('q3-compose').scrollIntoView({behavior:'smooth', block:'center'});
+}
+
+/* =====================================================================
+   STAGE 4 — 终章铭文
+   ===================================================================== */
+const FINAL = [
+  {words:[['ruk'],['anu'],['gol','ta']],
+   chips:['风暴','吞没了','岛屿','国王','看见了'],
+   ans:['风暴','吞没了','岛屿']},
+  {words:[['veth'],['dar','ki'],['tav','ki'],['n5','n5','n5','n5'],['daru','ta']],
+   chips:['国王','给了','人们','二十艘船','鱼群','航行着'],
+   ans:['国王','给了','人们','二十艘船']},
+  {words:[['dar','ki'],['lan'],['tema','ta']],
+   chips:['人们','航向了','大海','注视着','岛屿'],
+   ans:['人们','航向了','大海']},
+  {words:[['sor'],['ish'],['mir','ki'],['dar','ki'],['oku']],
+   chips:['日月与群星','注视着','人们','看见了','大海'],
+   ans:['日月与群星','注视着','人们']}
+];
+let finalDone = 0;
+function buildStage4(){
+  // 泥板全文 + 顶部图画
+  const scene =
+    '<svg width="100%" height="90" viewBox="0 0 400 90" style="color:#b2763a">' +
+    '<path d="M30 18 Q50 6 70 16 Q90 2 110 14 Q130 6 148 18" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>' +
+    '<path d="M95 24 L80 48 L95 48 L72 80" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>' +
+    '<path d="M180 60 L230 22 L280 60" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/>' +
+    '<path d="M150 56 Q170 42 190 56 T230 56 T270 56 T310 56 T350 56" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>' +
+    '<path d="M160 74 Q180 60 200 74 T240 74 T280 74 T320 74" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" opacity=".7"/>' +
+    '<circle cx="330" cy="20" r="9" fill="none" stroke="currentColor" stroke-width="4"/>' +
+    '<path d="M355 14 A13 13 0 1 0 355 40 A16 16 0 0 1 355 14 Z" fill="currentColor"/>' +
+    '</svg>';
+  const tf = document.getElementById('t-final');
+  tf.innerHTML = '<div style="border-bottom:1px dashed #4a3f2c;margin-bottom:10px;padding-bottom:6px">' + scene + '</div>' +
+    FINAL.map((L, i) =>
+      '<div class="gline" style="justify-content:flex-start;margin:8px 0" id="fl-g' + i + '">' +
+      '<span style="color:#857a62;font-size:12px;width:34px">第' + '一二三四'[i] + '行</span>' +
+      sentenceHTML(L.words, 32) + '<span id="fl-ok' + i + '" style="color:var(--ok);font-size:14px;margin-left:8px"></span></div>'
+    ).join('');
+
+  // 每行一个碎片排序器
+  const mount = document.getElementById('final-lines');
+  mount.innerHTML = '';
+  FINAL.forEach((L, i) => {
+    const q = el('<div class="quiz"><h3>⟡ 译出第' + '一二三四'[i] + '行</h3><div id="fl-comp' + i + '"></div></div>');
+    mount.appendChild(q);
+    let chips = shuffle(L.chips);
+    // 防止初始顺序恰好给出答案开头
+    if (chips.slice(0, L.ans.length).join('') === L.ans.join('')) chips = chips.reverse();
+    makeComposer({
+      mount:'fl-comp' + i,
+      items: chips.map(c => ({key:c, html:c})),
+      answer: L.ans,
+      checkLabel:'确认译文',
+      okMsg:'✓ 译文成立：「' + L.ans.join('') + '。」',
+      onOK(){
+        document.getElementById('fl-ok' + i).textContent = '✓ ' + L.ans.join('');
+        finalDone++;
+        if (finalDone === FINAL.length) finish();
+      }
+    });
+  });
+}
+
+/* ---------- 结局 ---------- */
+function finish(){
+  addNote('澜屿纪事 · 全文',
+    FINAL.map(L => '「' + L.ans.join('') + '。」').join('<br>') +
+    '<br><span class="rm">新识：' + glyphSVG('ruk',18) + ' 风暴 ruk · ' + glyphSVG('gol',18) + ' 吞没 gol</span>');
+  document.getElementById('story-text').innerHTML =
+    FINAL.map(L => L.ans.join('') + '。').join('<br>');
+  const name = (sessionStorage.getItem('scholar') || '').trim() || '无名学者';
+  document.getElementById('cert-name').textContent = name;
+  const mins = Math.max(1, Math.round((Date.now() - S.start) / 60000));
+  const penalty = S.errors + S.hints;
+  const rank = penalty === 0 ? 'S' : penalty <= 3 ? 'A' : penalty <= 7 ? 'B' : 'C';
+  document.getElementById('cert-rank').textContent = rank;
+  document.getElementById('cert-meta').textContent =
+    '用时约 ' + mins + ' 分钟 · 误判 ' + S.errors + ' 次 · 提示 ' + S.hints + ' 次 · 颁发日期 ' +
+    new Date().toLocaleDateString('zh-CN');
+  unlockStage('ending');
+  chime(true); setTimeout(() => chime(true), 400);
+}
+
+/* ---------- 尘埃粒子 ---------- */
+(function(){
+  const cv = document.getElementById('dust'), cx = cv.getContext('2d');
+  let W, H, P = [];
+  function resize(){ W = cv.width = innerWidth; H = cv.height = innerHeight; }
+  addEventListener('resize', resize); resize();
+  for (let i = 0; i < 46; i++) P.push({
+    x: Math.random()*W, y: Math.random()*H,
+    r: Math.random()*1.6+0.4, s: Math.random()*0.25+0.05,
+    dx: (Math.random()-0.5)*0.12, a: Math.random()*0.5+0.1
+  });
+  (function tick(){
+    cx.clearRect(0,0,W,H);
+    for (const p of P){
+      p.y -= p.s; p.x += p.dx;
+      if (p.y < -4){ p.y = H+4; p.x = Math.random()*W; }
+      cx.beginPath(); cx.arc(p.x, p.y, p.r, 0, 7);
+      cx.fillStyle = 'rgba(217,180,105,' + p.a * 0.5 + ')';
+      cx.fill();
+    }
+    requestAnimationFrame(tick);
+  })();
+})();
+
+/* ---------- 启动 ---------- */
+document.getElementById('startBtn').onclick = () => {
+  sessionStorage.setItem('scholar', document.getElementById('scholarName').value || '');
+  document.getElementById('intro').style.display = 'none';
+  document.getElementById('main').classList.add('show');
+  S.start = Date.now();
+  buildStage1();
+  unlockStage('s1');
+  window.scrollTo({top:0});
+};
+</script>
+</body>
+</html>

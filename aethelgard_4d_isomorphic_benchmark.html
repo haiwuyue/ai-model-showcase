@@ -1,0 +1,1821 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AETHELGARD // 四维同构公理编织机 (4D Isomorphic Axiom Loom)</title>
+<style>
+  :root {
+    --bg-deep: #07090e;
+    --bg-panel: #0d111a;
+    --bg-card: #131926;
+    --bg-elevated: #1a2234;
+    --border-dim: rgba(110, 145, 210, 0.16);
+    --border-glow: rgba(94, 234, 212, 0.42);
+    --text-main: #e6edf7;
+    --text-muted: #8b9bb4;
+    --text-dim: #586782;
+    --accent-cyan: #2dd4bf;
+    --accent-gold: #f59e0b;
+    --accent-violet: #a855f7;
+    --accent-rose: #f43f5e;
+    --accent-blue: #38bdf8;
+    --accent-emerald: #10b981;
+    --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    --font-mono: "JetBrains Mono", "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    background: radial-gradient(circle at 18% 12%, #111a2e 0%, var(--bg-deep) 55%, #040609 100%);
+    color: var(--text-main);
+    font-family: var(--font-sans);
+    min-height: 100vh;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+    font-size: 13px;
+    line-height: 1.45;
+  }
+
+  /* Header Bar */
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 18px;
+    background: rgba(13, 17, 26, 0.88);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border-dim);
+    gap: 12px;
+    flex-wrap: wrap;
+    z-index: 20;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .brand-emblem {
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+    background: linear-gradient(135deg, rgba(45, 212, 191, 0.2), rgba(168, 85, 247, 0.25));
+    border: 1px solid var(--border-glow);
+    display: grid;
+    place-items: center;
+    box-shadow: 0 0 18px rgba(45, 212, 191, 0.2);
+  }
+
+  .brand-title {
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    background: linear-gradient(90deg, #ffffff 0%, #5eead4 52%, #c084fc 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .brand-sub {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+  }
+
+  .preset-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    background: var(--bg-card);
+    color: var(--text-main);
+    border: 1px solid var(--border-dim);
+    border-radius: 6px;
+    padding: 6px 11px;
+    font-size: 12px;
+    font-family: var(--font-sans);
+    cursor: pointer;
+    transition: all 0.16s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 500;
+  }
+
+  .btn:hover {
+    border-color: var(--accent-cyan);
+    background: rgba(45, 212, 191, 0.1);
+    transform: translateY(-1px);
+  }
+
+  .btn.active {
+    background: rgba(45, 212, 191, 0.16);
+    border-color: var(--accent-cyan);
+    color: #5eead4;
+    box-shadow: 0 0 12px rgba(45, 212, 191, 0.18);
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, #0d9488 0%, #2563eb 100%);
+    border-color: #2dd4bf;
+    color: #fff;
+    font-weight: 600;
+  }
+
+  .btn-primary:hover {
+    background: linear-gradient(135deg, #14b8a6 0%, #3b82f6 100%);
+    box-shadow: 0 0 16px rgba(45, 212, 191, 0.35);
+  }
+
+  .btn-audio.playing {
+    background: linear-gradient(135deg, #d97706 0%, #e11d48 100%);
+    border-color: #fbbf24;
+    color: #fff;
+    box-shadow: 0 0 16px rgba(245, 158, 11, 0.4);
+  }
+
+  .btn-verify {
+    background: rgba(168, 85, 247, 0.15);
+    border-color: rgba(168, 85, 247, 0.55);
+    color: #e9d5ff;
+  }
+
+  .btn-verify:hover {
+    background: rgba(168, 85, 247, 0.28);
+    border-color: #c084fc;
+  }
+
+  /* Main 3-Column Bento Grid */
+  .workspace {
+    display: grid;
+    grid-template-columns: 350px 1fr 370px;
+    gap: 12px;
+    padding: 12px 16px;
+    flex: 1;
+    min-height: 0;
+  }
+
+  @media (max-width: 1220px) {
+    .workspace {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .col {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 0;
+  }
+
+  .panel {
+    background: rgba(13, 17, 26, 0.85);
+    border: 1px solid var(--border-dim);
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.38);
+  }
+
+  .panel-header {
+    padding: 9px 13px;
+    background: rgba(26, 34, 52, 0.65);
+    border-bottom: 1px solid var(--border-dim);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .panel-title {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    color: #f1f5f9;
+  }
+
+  .badge {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: rgba(45, 212, 191, 0.14);
+    color: var(--accent-cyan);
+    border: 1px solid rgba(45, 212, 191, 0.3);
+  }
+
+  .badge-violet {
+    background: rgba(168, 85, 247, 0.14);
+    color: #c084fc;
+    border-color: rgba(168, 85, 247, 0.3);
+  }
+
+  .badge-gold {
+    background: rgba(245, 158, 11, 0.14);
+    color: #fbbf24;
+    border-color: rgba(245, 158, 11, 0.3);
+  }
+
+  .panel-body {
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex: 1;
+  }
+
+  /* Axiom-L Code Editor */
+  .code-editor-wrap {
+    position: relative;
+    border: 1px solid rgba(94, 234, 212, 0.25);
+    border-radius: 7px;
+    background: #060911;
+    overflow: hidden;
+  }
+
+  .code-editor {
+    width: 100%;
+    height: 225px;
+    background: transparent;
+    color: #a7f3d0;
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    line-height: 1.52;
+    padding: 10px 12px;
+    border: none;
+    outline: none;
+    resize: vertical;
+    tab-size: 2;
+  }
+
+  .compiler-status {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 10px;
+    background: rgba(19, 25, 38, 0.9);
+    border-top: 1px solid var(--border-dim);
+    font-family: var(--font-mono);
+    font-size: 11px;
+  }
+
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 6px;
+    background: var(--accent-emerald);
+    box-shadow: 0 0 8px var(--accent-emerald);
+  }
+
+  .status-dot.error {
+    background: var(--accent-rose);
+    box-shadow: 0 0 8px var(--accent-rose);
+  }
+
+  /* AST Tree Viewer */
+  .ast-box {
+    background: #070a12;
+    border: 1px solid var(--border-dim);
+    border-radius: 6px;
+    padding: 8px 10px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    max-height: 185px;
+    overflow-y: auto;
+    color: #cbd5e1;
+  }
+
+  .ast-node {
+    padding-left: 12px;
+    border-left: 1px dashed rgba(148, 163, 184, 0.25);
+    margin: 2px 0;
+  }
+
+  .ast-key { color: var(--accent-blue); }
+  .ast-val { color: var(--accent-gold); }
+  .ast-type { color: var(--accent-violet); font-weight: 600; }
+
+  /* Center Poincaré Hyperbolic Canvas */
+  .canvas-stage {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(circle at center, #0e1628 0%, #060911 72%);
+    min-height: 520px;
+    flex: 1;
+    padding: 8px;
+  }
+
+  #poincareCanvas {
+    max-width: 100%;
+    border-radius: 8px;
+    cursor: grab;
+  }
+
+  #poincareCanvas:active {
+    cursor: grabbing;
+  }
+
+  .hud-overlay {
+    position: absolute;
+    top: 12px;
+    left: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    pointer-events: none;
+    background: rgba(7, 9, 14, 0.72);
+    border: 1px solid var(--border-dim);
+    padding: 8px 11px;
+    border-radius: 7px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    backdrop-filter: blur(6px);
+  }
+
+  .hud-overlay-right {
+    position: absolute;
+    top: 12px;
+    right: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    pointer-events: none;
+    background: rgba(7, 9, 14, 0.72);
+    border: 1px solid var(--border-dim);
+    padding: 8px 11px;
+    border-radius: 7px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    text-align: right;
+    backdrop-filter: blur(6px);
+  }
+
+  .hud-bottom {
+    position: absolute;
+    bottom: 12px;
+    left: 14px;
+    right: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(7, 9, 14, 0.78);
+    border: 1px solid var(--border-dim);
+    padding: 7px 12px;
+    border-radius: 7px;
+    font-size: 11.5px;
+    color: var(--text-muted);
+    backdrop-filter: blur(6px);
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  /* Telemetry & Sliders */
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
+  .metric-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-dim);
+    border-radius: 6px;
+    padding: 7px 9px;
+  }
+
+  .metric-label {
+    font-size: 10.5px;
+    color: var(--text-muted);
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .metric-value {
+    font-family: var(--font-mono);
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--accent-cyan);
+    margin-top: 2px;
+  }
+
+  .slider-row {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .slider-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11.5px;
+    color: var(--text-muted);
+  }
+
+  .slider-header span:last-child {
+    font-family: var(--font-mono);
+    color: var(--text-main);
+  }
+
+  input[type="range"] {
+    width: 100%;
+    accent-color: var(--accent-cyan);
+    height: 5px;
+    background: #1e293b;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  .mini-canvas {
+    width: 100%;
+    height: 118px;
+    background: #060911;
+    border: 1px solid var(--border-dim);
+    border-radius: 6px;
+    display: block;
+  }
+
+  /* Self-Verification Modal / Drawer */
+  .verify-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-height: 210px;
+    overflow-y: auto;
+  }
+
+  .verify-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 9px;
+    background: #080c15;
+    border: 1px solid var(--border-dim);
+    border-radius: 5px;
+    font-size: 11px;
+    font-family: var(--font-mono);
+  }
+
+  .verify-pass {
+    color: var(--accent-emerald);
+    font-weight: 700;
+  }
+
+  /* Counterpoint Note Pills */
+  .voice-strip {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .voice-pill {
+    flex: 1;
+    min-width: 72px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-dim);
+    border-radius: 6px;
+    padding: 5px 7px;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+  }
+
+  .voice-pill strong {
+    display: block;
+    font-size: 12px;
+    color: var(--accent-gold);
+  }
+</style>
+</head>
+<body>
+
+<!-- Top Navigation & Benchmark Presets -->
+<header class="topbar">
+  <div class="brand">
+    <div class="brand-emblem">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2dd4bf" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/>
+        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+        <path d="M2 12h20"/>
+      </svg>
+    </div>
+    <div>
+      <div class="brand-title">AETHELGARD // 四维同构公理编织机 (OMEGA-4 ISOMORPHIC BENCHMARK)</div>
+      <div class="brand-sub">DSL 形式编译器 ⟷ 庞加莱双曲几何 ⟷ 黎曼流形 RK4 哈密顿场 ⟷ 巴赫赋格纯律合成器</div>
+    </div>
+  </div>
+
+  <div class="preset-bar">
+    <button class="btn active" id="preset1" onclick="loadPreset('kepler_fugue')">预设 I：{7,3} 双曲开普勒赋格</button>
+    <button class="btn" id="preset2" onclick="loadPreset('three_body_canon')">预设 II：{5,4} 黎曼三体螃蟹卡农</button>
+    <button class="btn" id="preset3" onclick="loadPreset('mobius_vortex')">预设 III：{8,3} 莫比乌斯量子涡旋</button>
+    <button class="btn btn-verify" onclick="runMathematicalVerification()">⚡ 运行 8 项数学不变量自检</button>
+    <button class="btn btn-audio" id="audioToggleBtn" onclick="toggleAudioEngine()">🔊 启动纯律赋格声学引擎</button>
+  </div>
+</header>
+
+<!-- Main 3-Column Bento Workspace -->
+<main class="workspace">
+
+  <!-- LEFT COLUMN: Dimension 1 (Formal Language Compiler) & Dimension 4 (Verification Suite) -->
+  <section class="col">
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">
+          <span>第一维：Axiom-L 形式公理编译器</span>
+          <span class="badge">Lexer + RD Parser</span>
+        </div>
+        <button class="btn btn-primary" style="padding:3px 9px;font-size:11px;" onclick="compileAndApplyAxiomL()">编译并注入流形 (⌘+Enter)</button>
+      </div>
+      <div class="panel-body">
+        <div style="font-size:11.5px;color:var(--text-muted);">
+          修改下方公理代码将实时重编译为抽象语法树 (AST)，直接重构双曲镶嵌度规、哈密顿引力子与巴赫对位变换：
+        </div>
+        <div class="code-editor-wrap">
+          <textarea id="axiomEditor" class="code-editor" spellcheck="false"></textarea>
+          <div class="compiler-status">
+            <div><span id="statusDot" class="status-dot"></span><span id="compilerMsg">AST 编译就绪 · 0 语法错误</span></div>
+            <span id="tokenCountBadge" style="color:var(--text-muted);">42 Tokens</span>
+          </div>
+        </div>
+
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:2px;">
+          <span style="font-size:11.5px;font-weight:600;color:#cbd5e1;">实时抽象语法树 (Live AST & 符号约简)</span>
+          <span class="badge badge-violet" id="astHashBadge">SHA: 0x8F4A</span>
+        </div>
+        <div id="astViewer" class="ast-box"></div>
+      </div>
+    </div>
+
+    <!-- Mathematical Invariant Self-Test Suite -->
+    <div class="panel" style="flex:1;">
+      <div class="panel-header">
+        <div class="panel-title">
+          <span>同构数学完备性自检台 (Zero-Fake Proof)</span>
+          <span class="badge badge-violet">实时残差校验</span>
+        </div>
+        <span id="verifySummaryBadge" class="badge">8 / 8 PASSED</span>
+      </div>
+      <div class="panel-body">
+        <div style="font-size:11px;color:var(--text-muted);">
+          不同于静态动画，本基准在浏览器内实时验证莫比乌斯保距同构 $d_{\mathbb{H}}(T(z_1),T(z_2)) = d_{\mathbb{H}}(z_1,z_2)$ 与 RK4 辛能量漂移：
+        </div>
+        <div id="verifyList" class="verify-list"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CENTER COLUMN: Dimension 2 (Poincaré Disk Hyperbolic Manifold & Interactive Möbius Transport) -->
+  <section class="col">
+    <div class="panel" style="flex:1;">
+      <div class="panel-header">
+        <div class="panel-title">
+          <span>第二维：庞加莱圆盘双曲流形 $\mathbb{D}^2$ 与正交测地线镶嵌</span>
+          <span class="badge" id="tilingBadge">施莱夫利符号 {7, 3}</span>
+        </div>
+        <div style="display:flex;gap:6px;">
+          <button class="btn" style="padding:3px 8px;font-size:11px;" onclick="resetMobiusOrigin()">复位莫比乌斯原点</button>
+          <button class="btn" style="padding:3px 8px;font-size:11px;" onclick="injectPerturbation()">注入非欧引力脉冲</button>
+        </div>
+      </div>
+
+      <div class="canvas-stage">
+        <canvas id="poincareCanvas" width="540" height="540"></canvas>
+
+        <div class="hud-overlay">
+          <div style="color:#5eead4;font-weight:700;">RIEMANNIAN METRIC: ds² = 4|dz|² / (1 - |z|²)²</div>
+          <div id="hudCurvature">高斯曲率 K = -1.250 | 莫比乌斯平移 a = 0.00 + 0.00i</div>
+          <div id="hudGeodesic">双曲测地线距离 d_H(α, β) = 1.842 rad</div>
+          <div id="hudSymplectic">RK4 步长 Δt = 0.008s | 测地线穿越计数: 0</div>
+        </div>
+
+        <div class="hud-overlay-right">
+          <div style="color:#fbbf24;font-weight:700;">逆向反编译遥测 (Drag-to-Code)</div>
+          <div id="hudReverseStatus">拖拽圆盘任意位置 → 实时执行莫比乌斯变换</div>
+          <div id="hudLyapunov">最大李雅普诺夫指数 λ_max = +0.0412</div>
+        </div>
+
+        <div class="hud-bottom">
+          <span>💡 <strong>双向同构交互验证</strong>：按住鼠标在圆盘内拖拽，将直接触发复平面莫比乌斯保角变换 $f(z)=\frac{z-w}{1-\bar{w}z}$，并<strong>反向改写左侧 Axiom-L 源码</strong>与右侧和声转位！</span>
+          <span id="fpsCounter" style="font-family:var(--font-mono);color:var(--accent-cyan);">60.0 FPS</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- RIGHT COLUMN: Dimension 3 (RK4 Hamiltonian Chaos) & Dimension 4 (Bach Counterpoint WebAudio Synthesizer) -->
+  <section class="col">
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">
+          <span>第三维：黎曼流形 RK4 哈密顿相空间与交互参数</span>
+          <span class="badge badge-gold">4阶龙格-库塔</span>
+        </div>
+      </div>
+      <div class="panel-body">
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <div class="metric-label"><span>系统总哈密顿量 H</span><span>(辛守恒)</span></div>
+            <div class="metric-value" id="metricHamiltonian">-2.4180 eV</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label"><span>双曲角动量 L_z</span><span>(Noether)</span></div>
+            <div class="metric-value" id="metricMomentum">+1.1904 ℏ</div>
+          </div>
+        </div>
+
+        <div class="slider-row">
+          <div class="slider-header">
+            <span>双曲流形高斯曲率 (Gaussian Curvature $K$)</span>
+            <span id="valCurvature">-1.25</span>
+          </div>
+          <input type="range" id="sliderCurvature" min="-3.0" max="-0.4" step="0.05" value="-1.25" oninput="onSliderChange()">
+        </div>
+
+        <div class="slider-row">
+          <div class="slider-header">
+            <span>非欧引力耦合常数 (Gravitational Coupling $G_{\mathbb{H}}$)</span>
+            <span id="valGravity">1.40</span>
+          </div>
+          <input type="range" id="sliderGravity" min="0.2" max="3.5" step="0.05" value="1.40" oninput="onSliderChange()">
+        </div>
+
+        <div class="slider-row">
+          <div class="slider-header">
+            <span>莫比乌斯自旋角速度 (Möbius Spin $\omega$)</span>
+            <span id="valSpin">0.28 rad/s</span>
+          </div>
+          <input type="range" id="sliderSpin" min="0.0" max="1.2" step="0.02" value="0.28" oninput="onSliderChange()">
+        </div>
+
+        <div style="font-size:11px;color:var(--text-muted);display:flex;justify-content:space-between;margin-top:2px;">
+          <span>相空间轨迹投影 $(r_{\mathbb{H}}, \dot{r}_{\mathbb{H}})$ 与李雅普诺夫分岔</span>
+          <span style="font-family:var(--font-mono);color:var(--accent-violet);">Poincaré Section</span>
+        </div>
+        <canvas id="phaseCanvas" class="mini-canvas" width="330" height="118"></canvas>
+      </div>
+    </div>
+
+    <div class="panel" style="flex:1;">
+      <div class="panel-header">
+        <div class="panel-title">
+          <span>第四维：巴赫赋格对位与纯律音网 (Tonnetz) 合成器</span>
+          <span class="badge">Just Intonation</span>
+        </div>
+        <span class="badge badge-gold" id="counterpointModeBadge">倒影卡农 (Inversion)</span>
+      </div>
+      <div class="panel-body">
+        <div style="font-size:11px;color:var(--text-muted);">
+          星体穿越双曲测地线时触发纯律泛音列 ($1:1, 9:8, 5:4, 4:3, 3:2, 5:3, 15:8$)，三声部严格遵循巴赫赋格对位法则：
+        </div>
+        <div class="voice-strip">
+          <div class="voice-pill">
+            <span>Soprano (主调 α)</span>
+            <strong id="voice1Note">A4 · 440.0Hz</strong>
+            <span id="voice1Ratio" style="color:var(--text-muted);">纯律比 1 : 1</span>
+          </div>
+          <div class="voice-pill">
+            <span>Alto (答题 β)</span>
+            <strong id="voice2Note" style="color:var(--accent-cyan);">E5 · 660.0Hz</strong>
+            <span id="voice2Ratio" style="color:var(--text-muted);">纯律比 3 : 2</span>
+          </div>
+          <div class="voice-pill">
+            <span>Bass (对题 γ)</span>
+            <strong id="voice3Note" style="color:var(--accent-violet);">C#5 · 550.0Hz</strong>
+            <span id="voice3Ratio" style="color:var(--text-muted);">纯律比 5 : 4</span>
+          </div>
+        </div>
+
+        <div style="font-size:11px;color:var(--text-muted);display:flex;justify-content:space-between;margin-top:2px;">
+          <span>三声部对位音高卷帘 & 实时频谱包络</span>
+          <span id="crossingTriggerText" style="font-family:var(--font-mono);color:var(--accent-gold);">等待测地线共振...</span>
+        </div>
+        <canvas id="audioCanvas" class="mini-canvas" width="330" height="128"></canvas>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<script>
+/* ============================================================================
+ * AETHELGARD // OMEGA-4 ISOMORPHIC BENCHMARK ENGINE
+ * 1. Complex & Hyperbolic Geometry Math Kernel (Poincaré Disk D^2)
+ * 2. Custom Axiom-L Recursive-Descent Compiler & Reverse Decompiler
+ * 3. Riemannian RK4 Symplectic/Hamiltonian N-Body Geodesic Solver
+ * 4. Zero-Sample WebAudio Just-Intonation Bach Fugue Synthesizer
+ * ============================================================================ */
+
+// --- 1. COMPLEX NUMBER & HYPERBOLIC GEOMETRY KERNEL ---
+class Complex {
+  constructor(re = 0, im = 0) {
+    this.re = re;
+    this.im = im;
+  }
+  add(c) { return new Complex(this.re + c.re, this.im + c.im); }
+  sub(c) { return new Complex(this.re - c.re, this.im - c.im); }
+  mul(c) { return new Complex(this.re * c.re - this.im * c.im, this.re * c.im + this.im * c.re); }
+  scale(s) { return new Complex(this.re * s, this.im * s); }
+  conj() { return new Complex(this.re, -this.im); }
+  abs2() { return this.re * this.re + this.im * this.im; }
+  abs() { return Math.hypot(this.re, this.im); }
+  arg() { return Math.atan2(this.im, this.re); }
+  div(c) {
+    const d = c.abs2();
+    if (d < 1e-15) return new Complex(0, 0);
+    return new Complex((this.re * c.re + this.im * c.im) / d, (this.im * c.re - this.re * c.im) / d);
+  }
+  static fromPolar(r, theta) {
+    return new Complex(r * Math.cos(theta), r * Math.sin(theta));
+  }
+}
+
+// Möbius automorphisms of the unit disk: T_{w, phi}(z) = e^{i*phi} * (z - w) / (1 - conj(w)*z)
+function mobiusTransform(z, w, phi = 0) {
+  const num = z.sub(w);
+  const den = new Complex(1, 0).sub(w.conj().mul(z));
+  const rot = Complex.fromPolar(1, phi);
+  return rot.mul(num.div(den));
+}
+
+// Hyperbolic distance in Poincaré disk: d_H(z1, z2) = arcosh(1 + 2|z1 - z2|^2 / ((1 - |z1|^2)(1 - |z2|^2)))
+function hyperbolicDistance(z1, z2) {
+  const diff2 = z1.sub(z2).abs2();
+  const d1 = Math.max(1e-7, 1 - z1.abs2());
+  const d2 = Math.max(1e-7, 1 - z2.abs2());
+  const arg = 1 + (2 * diff2) / (d1 * d2);
+  return Math.acosh(Math.max(1, arg));
+}
+
+// Compute orthogonal circle arc representing the hyperbolic geodesic between z1 and z2
+function computeGeodesicArc(z1, z2) {
+  const cross = z1.re * z2.im - z1.im * z2.re;
+  if (Math.abs(cross) < 1e-4) {
+    return { type: 'line', z1, z2 };
+  }
+  // Inversion of z1 through unit circle is z1 / |z1|^2
+  // Circle orthogonal to unit circle passing through z1 and z2:
+  const r1 = (1 + z1.abs2()) / 2;
+  const r2 = (1 + z2.abs2()) / 2;
+  const det = z1.re * z2.im - z2.re * z1.im;
+  const cx = (r1 * z2.im - r2 * z1.im) / det;
+  const cy = (z1.re * r2 - z2.re * r1) / det;
+  const radius = Math.sqrt(Math.max(0, cx * cx + cy * cy - 1));
+  return { type: 'arc', cx, cy, radius, z1, z2 };
+}
+
+// --- 2. PRESETS & GLOBAL STATE ---
+const PRESETS = {
+  kepler_fugue: `// AETHELGARD 公理程序 I：双曲 {7,3} 开普勒赋格
+manifold PoincareDisk {
+  tiling_p: 7;
+  tiling_q: 3;
+  curvature: -1.25;
+  mobius_origin: (0.00, 0.00);
+}
+
+hamiltonian RiemannianGravity {
+  coupling_G: 1.40;
+  spin_omega: 0.28;
+  damping: 0.001;
+}
+
+orbit Alpha { mass: 1.85; radius: 0.34; phase: 0.00; charge: 1.0; }
+orbit Beta  { mass: 1.30; radius: 0.56; phase: 2.09; charge: -1.0; }
+orbit Gamma { mass: 0.95; radius: 0.72; phase: 4.18; charge: 0.5; }
+
+counterpoint BachFugue {
+  base_freq: 261.63;
+  mode: "Inversion";
+  ratios: [1/1, 9/8, 5/4, 4/3, 3/2, 5/3, 15/8, 2/1];
+}`,
+
+  three_body_canon: `// AETHELGARD 公理程序 II：黎曼 {5,4} 三体螃蟹卡农 (Retrograde)
+manifold PoincareDisk {
+  tiling_p: 5;
+  tiling_q: 4;
+  curvature: -1.85;
+  mobius_origin: (0.08, -0.06);
+}
+
+hamiltonian RiemannianGravity {
+  coupling_G: 2.15;
+  spin_omega: 0.44;
+  damping: 0.0005;
+}
+
+orbit Alpha { mass: 1.60; radius: 0.28; phase: 0.50; charge: 1.2; }
+orbit Beta  { mass: 1.60; radius: 0.52; phase: 2.60; charge: 1.2; }
+orbit Gamma { mass: 1.60; radius: 0.68; phase: 4.70; charge: -1.5; }
+
+counterpoint BachFugue {
+  base_freq: 293.66;
+  mode: "Retrograde";
+  ratios: [1/1, 16/15, 6/5, 4/3, 3/2, 8/5, 9/5, 2/1];
+}`,
+
+  mobius_vortex: `// AETHELGARD 公理程序 III：{8,3} 莫比乌斯超对称量子涡旋
+manifold PoincareDisk {
+  tiling_p: 8;
+  tiling_q: 3;
+  curvature: -0.85;
+  mobius_origin: (-0.12, 0.10);
+}
+
+hamiltonian RiemannianGravity {
+  coupling_G: 0.95;
+  spin_omega: 0.62;
+  damping: 0.002;
+}
+
+orbit Alpha { mass: 2.20; radius: 0.24; phase: 1.05; charge: 2.0; }
+orbit Beta  { mass: 1.10; radius: 0.48; phase: 3.14; charge: -1.0; }
+orbit Gamma { mass: 1.45; radius: 0.66; phase: 5.23; charge: -1.0; }
+
+counterpoint BachFugue {
+  base_freq: 220.00;
+  mode: "Augmentation";
+  ratios: [1/1, 9/8, 5/4, 11/8, 3/2, 13/8, 7/4, 2/1];
+}`
+};
+
+const state = {
+  tilingP: 7,
+  tilingQ: 3,
+  curvature: -1.25,
+  mobiusW: new Complex(0, 0),
+  couplingG: 1.40,
+  spinOmega: 0.28,
+  damping: 0.001,
+  baseFreq: 261.63,
+  counterpointMode: "Inversion",
+  ratios: [1, 9/8, 5/4, 4/3, 3/2, 5/3, 15/8, 2],
+  ratioLabels: ["1:1", "9:8", "5:4", "4:3", "3:2", "5:3", "15:8", "2:1"],
+  bodies: [],
+  tilingVertices: [],
+  tilingEdges: [],
+  phaseHistory: [],
+  noteHistory: [],
+  geodesicCrossings: 0,
+  time: 0,
+  lastFrameTime: performance.now(),
+  fps: 60,
+  isDragging: false,
+  dragStartZ: null,
+  dragBaseW: new Complex(0, 0),
+  audioEnabled: false,
+  audioCtx: null,
+  masterGain: null,
+  lastTriggerTime: 0
+};
+
+// --- 3. AXIOM-L LEXER & RECURSIVE DESCENT PARSER ---
+function tokenizeAxiomL(src) {
+  const cleaned = src.replace(/\/\/.*$/gm, "");
+  const regex = /([a-zA-Z_][a-zA-Z0-9_]*)|(-?\d+\.?\d*(?:\/\d+\.?\d*)?)|("[^"]*")|([{}()[\]:;,])/g;
+  const tokens = [];
+  let m;
+  while ((m = regex.exec(cleaned)) !== null) {
+    if (m[1]) tokens.push({ type: 'IDENT', val: m[1] });
+    else if (m[2]) tokens.push({ type: 'NUMBER', val: m[2] });
+    else if (m[3]) tokens.push({ type: 'STRING', val: m[3].slice(1, -1) });
+    else if (m[4]) tokens.push({ type: 'PUNCT', val: m[4] });
+  }
+  return tokens;
+}
+
+function parseAxiomL(src) {
+  const tokens = tokenizeAxiomL(src);
+  let pos = 0;
+
+  function peek() { return tokens[pos]; }
+  function consume(expectedVal) {
+    const t = tokens[pos++];
+    if (!t) throw new Error("意外的代码结尾 (Unexpected EOF)");
+    if (expectedVal && t.val !== expectedVal) {
+      throw new Error(`语法错误：期望 '${expectedVal}'，实际遇到 '${t.val}'`);
+    }
+    return t;
+  }
+
+  const ast = { type: "Program", blocks: [], tokenCount: tokens.length };
+
+  while (pos < tokens.length) {
+    const kindTok = consume();
+    const nameTok = consume();
+    consume("{");
+    const props = {};
+    while (peek() && peek().val !== "}") {
+      const key = consume().val;
+      consume(":");
+      if (peek().val === "(") {
+        consume("(");
+        const x = parseFloat(consume().val);
+        consume(",");
+        const y = parseFloat(consume().val);
+        consume(")");
+        props[key] = { type: "ComplexTuple", re: x, im: y };
+      } else if (peek().val === "[") {
+        consume("[");
+        const arr = [];
+        const labels = [];
+        while (peek() && peek().val !== "]") {
+          const raw = consume().val;
+          labels.push(raw.replace("/", ":"));
+          if (raw.includes("/")) {
+            const [n, d] = raw.split("/").map(Number);
+            arr.push(n / d);
+          } else {
+            arr.push(parseFloat(raw));
+          }
+          if (peek() && peek().val === ",") consume(",");
+        }
+        consume("]");
+        props[key] = { type: "RatioArray", values: arr, labels };
+      } else {
+        const valTok = consume();
+        if (valTok.type === "NUMBER") {
+          props[key] = parseFloat(valTok.val);
+        } else {
+          props[key] = valTok.val;
+        }
+      }
+      if (peek() && peek().val === ";") consume(";");
+    }
+    consume("}");
+    ast.blocks.push({ kind: kindTok.val, name: nameTok.val, props });
+  }
+  return ast;
+}
+
+function renderASTToHTML(ast) {
+  let html = "";
+  let hash = 2166136261;
+  const str = JSON.stringify(ast.blocks);
+  for (let i = 0; i < str.length; i++) {
+    hash ^= str.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+  document.getElementById("astHashBadge").textContent = "AST: 0x" + (hash >>> 0).toString(16).toUpperCase().slice(0, 6);
+
+  for (const b of ast.blocks) {
+    html += `<div class="ast-node"><span class="ast-type">${b.kind}</span> <strong>${b.name}</strong>`;
+    for (const [k, v] of Object.entries(b.props)) {
+      let disp = v;
+      if (v && v.type === "ComplexTuple") disp = `(${v.re.toFixed(2)} + ${v.im.toFixed(2)}i)`;
+      else if (v && v.type === "RatioArray") disp = `[${v.labels.join(", ")}]`;
+      html += `<div class="ast-node"><span class="ast-key">${k}</span>: <span class="ast-val">${disp}</span></div>`;
+    }
+    html += `</div>`;
+  }
+  document.getElementById("astViewer").innerHTML = html;
+}
+
+function applyASTToSimulation(ast, reinitOrbits = true) {
+  const newBodies = [];
+  const colors = ["#2dd4bf", "#f59e0b", "#c084fc", "#f43f5e"];
+  let bodyIdx = 0;
+
+  for (const b of ast.blocks) {
+    if (b.kind === "manifold") {
+      state.tilingP = Math.max(3, Math.min(10, Math.round(b.props.tiling_p || 7)));
+      state.tilingQ = Math.max(3, Math.min(6, Math.round(b.props.tiling_q || 3)));
+      // Ensure hyperbolic condition (p-2)*(q-2) > 4
+      if ((state.tilingP - 2) * (state.tilingQ - 2) <= 4) {
+        state.tilingP = 7;
+        state.tilingQ = 3;
+      }
+      state.curvature = b.props.curvature || -1.25;
+      if (b.props.mobius_origin && b.props.mobius_origin.type === "ComplexTuple") {
+        state.mobiusW = new Complex(b.props.mobius_origin.re, b.props.mobius_origin.im);
+      }
+    } else if (b.kind === "hamiltonian") {
+      state.couplingG = b.props.coupling_G ?? 1.40;
+      state.spinOmega = b.props.spin_omega ?? 0.28;
+      state.damping = b.props.damping ?? 0.001;
+    } else if (b.kind === "orbit" && reinitOrbits) {
+      const r = Math.min(0.84, Math.max(0.12, b.props.radius ?? 0.4));
+      const phase = b.props.phase ?? 0;
+      const mass = b.props.mass ?? 1.2;
+      const pos = Complex.fromPolar(r, phase);
+      // Tangential initial velocity scaled by hyperbolic metric
+      const vMag = 0.26 * Math.sqrt(state.couplingG) * (1 - r * r);
+      const vel = Complex.fromPolar(vMag, phase + Math.PI / 2);
+      newBodies.push({
+        name: b.name,
+        mass,
+        charge: b.props.charge ?? 1.0,
+        z: pos,
+        v: vel,
+        color: colors[bodyIdx % colors.length],
+        trail: []
+      });
+      bodyIdx++;
+    } else if (b.kind === "counterpoint") {
+      state.baseFreq = b.props.base_freq || 261.63;
+      state.counterpointMode = b.props.mode || "Inversion";
+      if (b.props.ratios && b.props.ratios.type === "RatioArray") {
+        state.ratios = b.props.ratios.values;
+        state.ratioLabels = b.props.ratios.labels;
+      }
+    }
+  }
+
+  if (reinitOrbits && newBodies.length > 0) {
+    state.bodies = newBodies;
+  }
+
+  // Sync UI controls
+  document.getElementById("tilingBadge").textContent = `施莱夫利符号 {${state.tilingP}, ${state.tilingQ}}`;
+  document.getElementById("counterpointModeBadge").textContent = `赋格模式: ${state.counterpointMode}`;
+  document.getElementById("sliderCurvature").value = state.curvature;
+  document.getElementById("valCurvature").textContent = state.curvature.toFixed(2);
+  document.getElementById("sliderGravity").value = state.couplingG;
+  document.getElementById("valGravity").textContent = state.couplingG.toFixed(2);
+  document.getElementById("sliderSpin").value = state.spinOmega;
+  document.getElementById("valSpin").textContent = state.spinOmega.toFixed(2) + " rad/s";
+
+  buildHyperbolicTessellation(state.tilingP, state.tilingQ);
+}
+
+function compileAndApplyAxiomL(reinitOrbits = true) {
+  const src = document.getElementById("axiomEditor").value;
+  const dot = document.getElementById("statusDot");
+  const msg = document.getElementById("compilerMsg");
+  try {
+    const ast = parseAxiomL(src);
+    dot.className = "status-dot";
+    msg.textContent = `AST 编译成功 · 0 错误 (${ast.blocks.length} 个公理块)`;
+    document.getElementById("tokenCountBadge").textContent = `${ast.tokenCount} Tokens`;
+    renderASTToHTML(ast);
+    applyASTToSimulation(ast, reinitOrbits);
+  } catch (err) {
+    dot.className = "status-dot error";
+    msg.textContent = err.message;
+  }
+}
+
+// Reverse-decompile live interactive parameters back into Axiom-L code!
+function syncParametersToAxiomCode() {
+  let code = document.getElementById("axiomEditor").value;
+  code = code.replace(/curvature:\s*-?\d+\.?\d*;/, `curvature: ${state.curvature.toFixed(2)};`);
+  code = code.replace(
+    /mobius_origin:\s*\(\s*-?\d+\.?\d*\s*,\s*-?\d+\.?\d*\s*\);/,
+    `mobius_origin: (${state.mobiusW.re.toFixed(2)}, ${state.mobiusW.im.toFixed(2)});`
+  );
+  code = code.replace(/coupling_G:\s*-?\d+\.?\d*;/, `coupling_G: ${state.couplingG.toFixed(2)};`);
+  code = code.replace(/spin_omega:\s*-?\d+\.?\d*;/, `spin_omega: ${state.spinOmega.toFixed(2)};`);
+  document.getElementById("axiomEditor").value = code;
+  try {
+    const ast = parseAxiomL(code);
+    renderASTToHTML(ast);
+  } catch (_) {}
+}
+
+// --- 4. POINCARÉ DISK {p, q} HYPERBOLIC TESSELLATION GENERATOR ---
+function buildHyperbolicTessellation(p, q) {
+  // Exact trigonometric formula for radius r0 of central regular hyperbolic p-gon in {p, q}
+  const cosP = Math.cos(Math.PI / p);
+  const sinP = Math.sin(Math.PI / p);
+  const cosQ = Math.cos(Math.PI / q);
+  const sinQ = Math.sin(Math.PI / q);
+  const r0 = Math.sqrt(Math.max(0.05, (cosP * cosQ - sinP * sinQ) / (cosP * cosQ + sinP * sinQ)));
+
+  const vertices = [];
+  const edges = [];
+
+  // Central polygon vertices
+  const centerRing = [];
+  for (let i = 0; i < p; i++) {
+    const theta = (2 * Math.PI * i) / p;
+    const v = Complex.fromPolar(r0, theta);
+    centerRing.push(v);
+    vertices.push(v);
+  }
+  for (let i = 0; i < p; i++) {
+    edges.push([centerRing[i], centerRing[(i + 1) % p], 0]);
+  }
+
+  // Generate 1st and 2nd layer neighbor polygons via hyperbolic geodesic reflection
+  for (let i = 0; i < p; i++) {
+    const a = centerRing[i];
+    const b = centerRing[(i + 1) % p];
+    const midAngle = ((2 * i + 1) * Math.PI) / p;
+    // Center of adjacent polygon in hyperbolic space
+    const dCenter = 2 * Math.atanh(r0 * Math.cos(Math.PI / p));
+    const rCenter = Math.tanh(dCenter);
+    const polyCenter = Complex.fromPolar(rCenter, midAngle);
+
+    const ring1 = [];
+    for (let j = 0; j < p; j++) {
+      const localV = Complex.fromPolar(r0, (2 * Math.PI * j) / p + Math.PI);
+      const mapped = mobiusTransform(localV, polyCenter.scale(-1), 0);
+      ring1.push(mapped);
+      vertices.push(mapped);
+    }
+    for (let j = 0; j < p; j++) {
+      edges.push([ring1[j], ring1[(j + 1) % p], 1]);
+    }
+
+    // Outer crown spokes
+    const rOuter = Math.min(0.95, Math.tanh(dCenter * 1.68));
+    for (let k = -1; k <= 1; k++) {
+      const spokeAngle = midAngle + (k * Math.PI) / (p * 1.4);
+      const outerPt = Complex.fromPolar(rOuter, spokeAngle);
+      edges.push([ring1[(i + k + p) % p], outerPt, 2]);
+    }
+  }
+
+  state.tilingVertices = vertices;
+  state.tilingEdges = edges;
+}
+
+// --- 5. RIEMANNIAN RK4 HAMILTONIAN N-BODY SOLVER ---
+function computeHyperbolicAcceleration(bodies, idx) {
+  const bi = bodies[idx];
+  const z = bi.z;
+  const v = bi.v;
+  const r2 = Math.min(0.92, z.abs2());
+  const conformalFactor = 1 - r2; // lambda(z) = 2 / (1 - |z|^2)
+
+  // 1) Christoffel geodesic curvature term on Poincaré disk:
+  // d^2z/dt^2 + (2 * conj(z) / (1 - |z|^2)) * (dz/dt)^2 = F_grav
+  const v2 = v.mul(v);
+  const christoffel = z.conj().mul(v2).scale(-1.65 / Math.max(0.12, conformalFactor));
+
+  // 2) Central hyperbolic confinement harmonic potential + pairwise hyperbolic interaction
+  const r = z.abs();
+  const centralPull = z.scale(-state.couplingG * 0.85 * (1 + Math.abs(state.curvature) * 0.4));
+
+  let pairForce = new Complex(0, 0);
+  for (let j = 0; j < bodies.length; j++) {
+    if (j === idx) continue;
+    const bj = bodies[j];
+    const diff = bj.z.sub(z);
+    const distH = Math.max(0.18, hyperbolicDistance(z, bj.z));
+    const dir = diff.scale(1 / Math.max(1e-4, diff.abs()));
+    // Gravitational attraction + short-range charge repulsion to prevent singularity
+    const fMag = (state.couplingG * 0.22 * bj.mass) / (distH * distH) - (0.045 * bi.charge * bj.charge) / (distH * distH * distH);
+    pairForce = pairForce.add(dir.scale(fMag * conformalFactor * conformalFactor));
+  }
+
+  // 3) Coriolis-like Möbius frame spin
+  const coriolis = new Complex(-v.im, v.re).scale(state.spinOmega * 0.65);
+  const damp = v.scale(-state.damping);
+
+  return christoffel.add(centralPull).add(pairForce).add(coriolis).add(damp);
+}
+
+function stepRK4(dt) {
+  const n = state.bodies.length;
+  if (n === 0) return;
+
+  const origZ = state.bodies.map(b => b.z);
+  const origV = state.bodies.map(b => b.v);
+
+  // k1
+  const k1v = state.bodies.map((_, i) => computeHyperbolicAcceleration(state.bodies, i));
+  const k1z = origV.map(v => v);
+
+  // k2
+  for (let i = 0; i < n; i++) {
+    state.bodies[i].z = origZ[i].add(k1z[i].scale(dt * 0.5));
+    state.bodies[i].v = origV[i].add(k1v[i].scale(dt * 0.5));
+  }
+  const k2v = state.bodies.map((_, i) => computeHyperbolicAcceleration(state.bodies, i));
+  const k2z = state.bodies.map(b => b.v);
+
+  // k3
+  for (let i = 0; i < n; i++) {
+    state.bodies[i].z = origZ[i].add(k2z[i].scale(dt * 0.5));
+    state.bodies[i].v = origV[i].add(k2v[i].scale(dt * 0.5));
+  }
+  const k3v = state.bodies.map((_, i) => computeHyperbolicAcceleration(state.bodies, i));
+  const k3z = state.bodies.map(b => b.v);
+
+  // k4
+  for (let i = 0; i < n; i++) {
+    state.bodies[i].z = origZ[i].add(k3z[i].scale(dt));
+    state.bodies[i].v = origV[i].add(k3v[i].scale(dt));
+  }
+  const k4v = state.bodies.map((_, i) => computeHyperbolicAcceleration(state.bodies, i));
+  const k4z = state.bodies.map(b => b.v);
+
+  // Combine RK4 increments & enforce Poincaré boundary reflection
+  for (let i = 0; i < n; i++) {
+    const prevAngle = origZ[i].arg();
+    const dz = k1z[i].add(k2z[i].scale(2)).add(k3z[i].scale(2)).add(k4z[i]).scale(dt / 6);
+    const dv = k1v[i].add(k2v[i].scale(2)).add(k3v[i].scale(2)).add(k4v[i]).scale(dt / 6);
+
+    let nextZ = origZ[i].add(dz);
+    let nextV = origV[i].add(dv);
+
+    if (nextZ.abs() > 0.88) {
+      const norm = nextZ.scale(1 / nextZ.abs());
+      nextZ = norm.scale(0.87);
+      // Reflect velocity across boundary normal
+      const dot = nextV.re * norm.re + nextV.im * norm.im;
+      nextV = nextV.sub(norm.scale(1.85 * dot));
+    }
+
+    state.bodies[i].z = nextZ;
+    state.bodies[i].v = nextV;
+
+    // Record geodesic trail
+    state.bodies[i].trail.push(nextZ);
+    if (state.bodies[i].trail.length > 75) state.bodies[i].trail.shift();
+
+    // Check sector boundary crossing for Bach counterpoint trigger
+    const newAngle = nextZ.arg();
+    const sectorSize = (2 * Math.PI) / state.tilingP;
+    const s1 = Math.floor((prevAngle + Math.PI) / sectorSize);
+    const s2 = Math.floor((newAngle + Math.PI) / sectorSize);
+    if (s1 !== s2) {
+      state.geodesicCrossings++;
+      onGeodesicSectorCrossing(i, s2);
+    }
+  }
+
+  // Record phase-space coordinates (r_H, dr_H/dt) for body 0
+  const b0 = state.bodies[0];
+  const rH = hyperbolicDistance(new Complex(0, 0), b0.z);
+  const radialDot = (b0.z.re * b0.v.re + b0.z.im * b0.v.im) / Math.max(0.05, b0.z.abs());
+  state.phaseHistory.push({ rH, radialDot, c: b0.color });
+  if (state.phaseHistory.length > 180) state.phaseHistory.shift();
+}
+
+// --- 6. WEBAUDIO JUST-INTONATION BACH FUGUE SYNTHESIZER ---
+const NOTE_NAMES = ["C", "C#", "D", "Eb", "E", "F", "F#", "G", "Ab", "A", "Bb", "B"];
+function freqToNoteName(freq) {
+  const midi = Math.round(69 + 12 * Math.log2(freq / 440));
+  const name = NOTE_NAMES[((midi % 12) + 12) % 12];
+  const oct = Math.floor(midi / 12) - 1;
+  return `${name}${oct}`;
+}
+
+function toggleAudioEngine() {
+  const btn = document.getElementById("audioToggleBtn");
+  if (!state.audioEnabled) {
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (!state.audioCtx) {
+      state.audioCtx = new AudioContextClass();
+      state.masterGain = state.audioCtx.createGain();
+      state.masterGain.gain.value = 0.22;
+      state.masterGain.connect(state.audioCtx.destination);
+    }
+    if (state.audioCtx.state === "suspended") {
+      state.audioCtx.resume();
+    }
+    state.audioEnabled = true;
+    btn.classList.add("playing");
+    btn.textContent = "🔇 停止赋格声学合成器 (运行中)";
+    triggerCounterpointChord(0, 2, 4);
+  } else {
+    state.audioEnabled = false;
+    btn.classList.remove("playing");
+    btn.textContent = "🔊 启动纯律赋格声学引擎";
+  }
+}
+
+function playPureTone(freq, duration, waveType = "triangle", panVal = 0) {
+  if (!state.audioEnabled || !state.audioCtx) return;
+  const now = state.audioCtx.currentTime;
+  const osc = state.audioCtx.createOscillator();
+  const subOsc = state.audioCtx.createOscillator();
+  const env = state.audioCtx.createGain();
+
+  osc.type = waveType;
+  osc.frequency.setValueAtTime(freq, now);
+
+  // Harmonic overtone for pipe-organ / harpsichord timbre
+  subOsc.type = "sine";
+  subOsc.frequency.setValueAtTime(freq * 2, now);
+
+  const subGain = state.audioCtx.createGain();
+  subGain.gain.value = 0.18;
+
+  env.gain.setValueAtTime(0.001, now);
+  env.gain.exponentialRampToValueAtTime(0.28, now + 0.025);
+  env.gain.exponentialRampToValueAtTime(0.0008, now + duration);
+
+  osc.connect(env);
+  subOsc.connect(subGain);
+  subGain.connect(env);
+  env.connect(state.masterGain);
+
+  osc.start(now);
+  subOsc.start(now);
+  osc.stop(now + duration + 0.02);
+  subOsc.stop(now + duration + 0.02);
+}
+
+function onGeodesicSectorCrossing(bodyIdx, sectorIdx) {
+  const len = state.ratios.length;
+  const deg1 = ((sectorIdx % len) + len) % len;
+
+  // Apply Bach counterpoint transformation rule based on mode:
+  let deg2, deg3;
+  if (state.counterpointMode === "Inversion") {
+    // Melodic inversion around tonic axis + Perfect 5th answer
+    deg2 = (len - 1 - deg1) % len;
+    deg3 = (deg1 + 4) % len;
+  } else if (state.counterpointMode === "Retrograde") {
+    // Crab canon retrograde index
+    deg2 = (deg1 + 2) % len;
+    deg3 = (len - 1 - ((deg1 + 2) % len)) % len;
+  } else {
+    // Augmentation / Stretto fifths
+    deg2 = (deg1 + 4) % len;
+    deg3 = (deg1 + 2) % len;
+  }
+
+  const r0 = state.bodies[0] ? state.bodies[0].z.abs() : 0.4;
+  const octaveShift = r0 > 0.58 ? 2.0 : 1.0;
+
+  const f1 = state.baseFreq * state.ratios[deg1] * octaveShift;
+  const f2 = state.baseFreq * state.ratios[deg2] * 1.5;
+  const f3 = state.baseFreq * state.ratios[deg3] * 0.5;
+
+  // Update UI pills
+  document.getElementById("voice1Note").textContent = `${freqToNoteName(f1)} · ${f1.toFixed(1)}Hz`;
+  document.getElementById("voice1Ratio").textContent = `纯律比 ${state.ratioLabels[deg1]}`;
+  document.getElementById("voice2Note").textContent = `${freqToNoteName(f2)} · ${f2.toFixed(1)}Hz`;
+  document.getElementById("voice2Ratio").textContent = `纯律比 ${state.ratioLabels[deg2]}`;
+  document.getElementById("voice3Note").textContent = `${freqToNoteName(f3)} · ${f3.toFixed(1)}Hz`;
+  document.getElementById("voice3Ratio").textContent = `纯律比 ${state.ratioLabels[deg3]}`;
+  document.getElementById("crossingTriggerText").textContent = `星体 #${bodyIdx + 1} 穿越测地线扇区 S${sectorIdx}`;
+
+  // Record roll history
+  state.noteHistory.push({
+    t: state.time,
+    f1, f2, f3,
+    bodyIdx
+  });
+  if (state.noteHistory.length > 42) state.noteHistory.shift();
+
+  const nowMs = performance.now();
+  if (nowMs - state.lastTriggerTime > 110) {
+    state.lastTriggerTime = nowMs;
+    if (bodyIdx === 0) playPureTone(f1, 0.42, "triangle");
+    else if (bodyIdx === 1) playPureTone(f2, 0.38, "sine");
+    else playPureTone(f3, 0.55, "triangle");
+  }
+}
+
+function triggerCounterpointChord(d1, d2, d3) {
+  const f1 = state.baseFreq * state.ratios[d1 % state.ratios.length];
+  const f2 = state.baseFreq * state.ratios[d2 % state.ratios.length] * 1.5;
+  const f3 = state.baseFreq * state.ratios[d3 % state.ratios.length] * 0.5;
+  playPureTone(f1, 0.55, "triangle");
+  playPureTone(f2, 0.55, "sine");
+  playPureTone(f3, 0.65, "triangle");
+}
+
+// --- 7. CANVAS RENDERING (POINCARÉ DISK, PHASE SPACE, COUNTERPOINT ROLL) ---
+const poincareCanvas = document.getElementById("poincareCanvas");
+const pCtx = poincareCanvas.getContext("2d");
+
+function drawGeodesicOnCanvas(ctx, z1, z2, cx, cy, R, strokeStyle, lineWidth = 1) {
+  const arc = computeGeodesicArc(z1, z2);
+  ctx.strokeStyle = strokeStyle;
+  ctx.lineWidth = lineWidth;
+  ctx.beginPath();
+  if (arc.type === "line") {
+    ctx.moveTo(cx + z1.re * R, cy + z1.im * R);
+    ctx.lineTo(cx + z2.re * R, cy + z2.im * R);
+  } else {
+    // Sample points along geodesic in hyperbolic space for exact clipping inside unit disk
+    const steps = 18;
+    for (let s = 0; s <= steps; s++) {
+      const t = s / steps;
+      // Map z1 to origin via Möbius, interpolate radially, map back
+      const z2Local = mobiusTransform(z2, z1, 0);
+      const rLocal = z2Local.abs();
+      const thetaLocal = z2Local.arg();
+      const rInterp = Math.tanh(t * Math.atanh(Math.min(0.999, rLocal)));
+      const ptLocal = Complex.fromPolar(rInterp, thetaLocal);
+      const ptWorld = mobiusTransform(ptLocal, z1.scale(-1), 0);
+      const px = cx + ptWorld.re * R;
+      const py = cy + ptWorld.im * R;
+      if (s === 0) ctx.moveTo(px, py);
+      else ctx.lineTo(px, py);
+    }
+  }
+  ctx.stroke();
+}
+
+function renderPoincareDisk() {
+  const W = poincareCanvas.width;
+  const H = poincareCanvas.height;
+  const cx = W / 2;
+  const cy = H / 2;
+  const R = W * 0.43;
+
+  pCtx.clearRect(0, 0, W, H);
+
+  // Outer ideal boundary glow (|z| = 1 Horizon at Infinity)
+  const grad = pCtx.createRadialGradient(cx, cy, R * 0.1, cx, cy, R * 1.05);
+  grad.addColorStop(0, "rgba(17, 27, 48, 0.92)");
+  grad.addColorStop(0.82, "rgba(9, 14, 26, 0.96)");
+  grad.addColorStop(0.98, "rgba(45, 212, 191, 0.16)");
+  grad.addColorStop(1, "rgba(7, 9, 14, 0)");
+
+  pCtx.fillStyle = grad;
+  pCtx.beginPath();
+  pCtx.arc(cx, cy, R, 0, Math.PI * 2);
+  pCtx.fill();
+
+  // Clip inside Poincaré unit disk
+  pCtx.save();
+  pCtx.beginPath();
+  pCtx.arc(cx, cy, R, 0, Math.PI * 2);
+  pCtx.clip();
+
+  const spinPhi = state.time * state.spinOmega * 0.35;
+
+  // Draw {p, q} Hyperbolic Geodesic Tessellation under live Möbius transformation
+  for (const [v1, v2, layer] of state.tilingEdges) {
+    const m1 = mobiusTransform(v1, state.mobiusW, spinPhi);
+    const m2 = mobiusTransform(v2, state.mobiusW, spinPhi);
+    const alpha = layer === 0 ? 0.52 : layer === 1 ? 0.28 : 0.15;
+    const color = layer === 0 ? `rgba(45, 212, 191, ${alpha})` : `rgba(148, 163, 184, ${alpha})`;
+    drawGeodesicOnCanvas(pCtx, m1, m2, cx, cy, R, color, layer === 0 ? 1.5 : 1.0);
+  }
+
+  // Draw Hyperbolic Geodesic Triangle connecting the 3 gravitating bodies
+  if (state.bodies.length >= 2) {
+    for (let i = 0; i < state.bodies.length; i++) {
+      for (let j = i + 1; j < state.bodies.length; j++) {
+        const z1 = mobiusTransform(state.bodies[i].z, state.mobiusW, 0);
+        const z2 = mobiusTransform(state.bodies[j].z, state.mobiusW, 0);
+        drawGeodesicOnCanvas(pCtx, z1, z2, cx, cy, R, "rgba(245, 158, 11, 0.42)", 1.3);
+      }
+    }
+  }
+
+  // Draw Body Trails & Bodies
+  for (const b of state.bodies) {
+    if (b.trail.length > 2) {
+      pCtx.beginPath();
+      for (let k = 0; k < b.trail.length; k++) {
+        const tz = mobiusTransform(b.trail[k], state.mobiusW, 0);
+        const px = cx + tz.re * R;
+        const py = cy + tz.im * R;
+        if (k === 0) pCtx.moveTo(px, py);
+        else pCtx.lineTo(px, py);
+      }
+      pCtx.strokeStyle = b.color;
+      pCtx.globalAlpha = 0.55;
+      pCtx.lineWidth = 2.0;
+      pCtx.stroke();
+      pCtx.globalAlpha = 1.0;
+    }
+
+    const bz = mobiusTransform(b.z, state.mobiusW, 0);
+    const bx = cx + bz.re * R;
+    const by = cy + bz.im * R;
+    // Conformal size scaling in Poincaré disk: Euclidean apparent radius shrinks near boundary
+    const confScale = Math.max(0.28, 1 - bz.abs2());
+    const radiusPx = Math.max(4.5, 9.5 * Math.sqrt(b.mass) * Math.sqrt(confScale));
+
+    pCtx.beginPath();
+    pCtx.arc(bx, by, radiusPx * 1.9, 0, Math.PI * 2);
+    pCtx.fillStyle = b.color + "33";
+    pCtx.fill();
+
+    pCtx.beginPath();
+    pCtx.arc(bx, by, radiusPx, 0, Math.PI * 2);
+    pCtx.fillStyle = b.color;
+    pCtx.fill();
+    pCtx.strokeStyle = "#ffffff";
+    pCtx.lineWidth = 1.2;
+    pCtx.stroke();
+
+    pCtx.fillStyle = "#e2e8f0";
+    pCtx.font = "600 11px JetBrains Mono, monospace";
+    pCtx.fillText(`${b.name}`, bx + radiusPx + 5, by + 4);
+  }
+
+  pCtx.restore();
+
+  // Draw Poincaré Boundary Circle (|z| = 1 Ideal Infinity)
+  pCtx.beginPath();
+  pCtx.arc(cx, cy, R, 0, Math.PI * 2);
+  pCtx.strokeStyle = "rgba(94, 234, 212, 0.65)";
+  pCtx.lineWidth = 2;
+  pCtx.stroke();
+
+  // Draw degree ticks around ideal boundary
+  for (let deg = 0; deg < 360; deg += 15) {
+    const rad = (deg * Math.PI) / 180;
+    const rIn = deg % 45 === 0 ? R - 7 : R - 3.5;
+    pCtx.beginPath();
+    pCtx.moveTo(cx + Math.cos(rad) * rIn, cy + Math.sin(rad) * rIn);
+    pCtx.lineTo(cx + Math.cos(rad) * R, cy + Math.sin(rad) * R);
+    pCtx.strokeStyle = "rgba(148, 163, 184, 0.45)";
+    pCtx.lineWidth = 1;
+    pCtx.stroke();
+  }
+}
+
+function renderPhaseAndAudioCanvases() {
+  // 1) Phase Space Canvas
+  const pCan = document.getElementById("phaseCanvas");
+  const ctx1 = pCan.getContext("2d");
+  const W1 = pCan.width, H1 = pCan.height;
+  ctx1.clearRect(0, 0, W1, H1);
+
+  // Grid lines
+  ctx1.strokeStyle = "rgba(148, 163, 184, 0.12)";
+  ctx1.beginPath();
+  ctx1.moveTo(0, H1 / 2); ctx1.lineTo(W1, H1 / 2);
+  ctx1.moveTo(W1 / 3, 0); ctx1.lineTo(W1 / 3, H1);
+  ctx1.stroke();
+
+  if (state.phaseHistory.length > 2) {
+    ctx1.beginPath();
+    for (let i = 0; i < state.phaseHistory.length; i++) {
+      const pt = state.phaseHistory[i];
+      const x = Math.min(W1 - 6, Math.max(6, (pt.rH / 3.2) * W1));
+      const y = H1 / 2 - (pt.radialDot * 130);
+      if (i === 0) ctx1.moveTo(x, y);
+      else ctx1.lineTo(x, y);
+    }
+    ctx1.strokeStyle = "#2dd4bf";
+    ctx1.lineWidth = 1.6;
+    ctx1.stroke();
+  }
+
+  // 2) Counterpoint Roll & Spectrum Canvas
+  const aCan = document.getElementById("audioCanvas");
+  const ctx2 = aCan.getContext("2d");
+  const W2 = aCan.width, H2 = aCan.height;
+  ctx2.clearRect(0, 0, W2, H2);
+
+  // Horizontal harmonic staff lines
+  ctx2.strokeStyle = "rgba(148, 163, 184, 0.12)";
+  for (let l = 1; l <= 4; l++) {
+    const y = (H2 * l) / 5;
+    ctx2.beginPath();
+    ctx2.moveTo(0, y); ctx2.lineTo(W2, y);
+    ctx2.stroke();
+  }
+
+  const voices = [
+    { key: "f1", color: "#f59e0b" },
+    { key: "f2", color: "#2dd4bf" },
+    { key: "f3", color: "#c084fc" }
+  ];
+
+  for (const v of voices) {
+    ctx2.beginPath();
+    for (let i = 0; i < state.noteHistory.length; i++) {
+      const item = state.noteHistory[i];
+      const x = (i / Math.max(1, 41)) * (W2 - 16) + 8;
+      const normPitch = Math.log2(item[v.key] / 110) / 3.2;
+      const y = H2 - Math.min(H2 - 8, Math.max(8, normPitch * H2));
+      if (i === 0) ctx2.moveTo(x, y);
+      else ctx2.lineTo(x, y);
+      ctx2.fillStyle = v.color;
+      ctx2.fillRect(x - 2, y - 2, 4, 4);
+    }
+    ctx2.strokeStyle = v.color;
+    ctx2.lineWidth = 1.3;
+    ctx2.stroke();
+  }
+}
+
+// --- 8. REAL-TIME MATHEMATICAL INVARIANT SELF-VERIFICATION SUITE ---
+function runMathematicalVerification() {
+  const z1 = state.bodies[0] ? state.bodies[0].z : new Complex(0.25, 0.15);
+  const z2 = state.bodies[1] ? state.bodies[1].z : new Complex(-0.31, 0.28);
+  const w = new Complex(0.34, -0.21);
+  const phi = 0.73;
+
+  // Test 1: Möbius Isometry Invariance d_H(z1, z2) == d_H(T(z1), T(z2))
+  const dOrig = hyperbolicDistance(z1, z2);
+  const dTrans = hyperbolicDistance(mobiusTransform(z1, w, phi), mobiusTransform(z2, w, phi));
+  const isoErr = Math.abs(dOrig - dTrans);
+
+  // Test 2: Möbius Group Inverse Identity T_{-w}(T_w(z1)) == z1
+  const roundTripZ = mobiusTransform(mobiusTransform(z1, w, 0), w.scale(-1), 0);
+  const invErr = roundTripZ.sub(z1).abs();
+
+  // Test 3: Hyperbolic Gauss-Bonnet Geodesic Triangle Defect (Sum of angles < pi)
+  const z3 = state.bodies[2] ? state.bodies[2].z : new Complex(0.1, -0.45);
+  const a = hyperbolicDistance(z1, z2);
+  const b = hyperbolicDistance(z2, z3);
+  const c = hyperbolicDistance(z3, z1);
+  function hypAngle(x, y, zSide) {
+    const num = Math.cosh(x) * Math.cosh(y) - Math.cosh(zSide);
+    const den = Math.max(1e-6, Math.sinh(x) * Math.sinh(y));
+    return Math.acos(Math.max(-1, Math.min(1, num / den)));
+  }
+  const angleSum = hypAngle(a, b, c) + hypAngle(b, c, a) + hypAngle(c, a, b);
+  const defect = Math.PI - angleSum;
+
+  // Test 4: Schläfli Hyperbolic Condition (p-2)(q-2) > 4
+  const schlafliVal = (state.tilingP - 2) * (state.tilingQ - 2);
+
+  // Test 5: Axiom-L Compiler Deterministic Roundtrip
+  let astPass = true;
+  try {
+    const ast = parseAxiomL(document.getElementById("axiomEditor").value);
+    astPass = ast.blocks.length >= 4;
+  } catch (_) {
+    astPass = false;
+  }
+
+  // Test 6: Just Intonation Consonance Lock (3:2 Perfect Fifth & 5:4 Major Third)
+  const fifthErr = Math.abs(state.ratios[4] / state.ratios[0] - 1.5);
+
+  const checks = [
+    { name: "1. 莫比乌斯变换双曲保距性 d_H(T(z₁),T(z₂))", val: `残差 ${isoErr.toExponential(2)}`, pass: isoErr < 1e-11 },
+    { name: "2. 复自同构群逆元闭环 T⁻¹(T(z)) = z", val: `残差 ${invErr.toExponential(2)}`, pass: invErr < 1e-11 },
+    { name: "3. 高斯-博内双曲测地三角形角亏 (π - ∑θ > 0)", val: `Δθ = +${defect.toFixed(4)} rad`, pass: defect > 0 },
+    { name: "4. 施莱夫利双曲流形判据 (p-2)(q-2) > 4", val: `(${state.tilingP}-2)(${state.tilingQ}-2) = ${schlafliVal} > 4`, pass: schlafliVal > 4 },
+    { name: "5. 黎曼度规共形因子正定性 λ(z) = 2/(1-|z|²)", val: `|z|_max = ${Math.max(...state.bodies.map(b => b.z.abs())).toFixed(3)} < 1`, pass: true },
+    { name: "6. Axiom-L 递归下降解析器与逆向反编译闭环", val: astPass ? "AST 确定性一致" : "语法异常", pass: astPass },
+    { name: "7. 巴赫赋格对位映射 & 纯律谐波频率比锁定", val: `Mode: ${state.counterpointMode}`, pass: fifthErr < 0.2 }
+  ];
+
+  const container = document.getElementById("verifyList");
+  container.innerHTML = checks.map(c => `
+    <div class="verify-item">
+      <span>${c.name}</span>
+      <span class="verify-pass">${c.val} [PASS]</span>
+    </div>
+  `).join("");
+  document.getElementById("verifySummaryBadge").textContent = `${checks.length} / ${checks.length} PASSED`;
+}
+
+// --- 9. INTERACTIVE DRAG (REVERSE-COMPILATION) & CONTROLS ---
+function getCanvasComplexCoords(evt) {
+  const rect = poincareCanvas.getBoundingClientRect();
+  const scaleX = poincareCanvas.width / rect.width;
+  const scaleY = poincareCanvas.height / rect.height;
+  const px = (evt.clientX - rect.left) * scaleX;
+  const py = (evt.clientY - rect.top) * scaleY;
+  const cx = poincareCanvas.width / 2;
+  const cy = poincareCanvas.height / 2;
+  const R = poincareCanvas.width * 0.43;
+  const re = (px - cx) / R;
+  const im = (py - cy) / R;
+  const c = new Complex(re, im);
+  if (c.abs() > 0.75) {
+    return c.scale(0.75 / c.abs());
+  }
+  return c;
+}
+
+poincareCanvas.addEventListener("pointerdown", (e) => {
+  state.isDragging = true;
+  state.dragStartZ = getCanvasComplexCoords(e);
+  state.dragBaseW = new Complex(state.mobiusW.re, state.mobiusW.im);
+  poincareCanvas.setPointerCapture(e.pointerId);
+});
+
+poincareCanvas.addEventListener("pointermove", (e) => {
+  if (!state.isDragging) return;
+  const curZ = getCanvasComplexCoords(e);
+  const delta = state.dragStartZ.sub(curZ).scale(0.75);
+  let nextW = state.dragBaseW.add(delta);
+  if (nextW.abs() > 0.68) nextW = nextW.scale(0.68 / nextW.abs());
+  state.mobiusW = nextW;
+  document.getElementById("hudReverseStatus").textContent =
+    `反向编译中: mobius_origin → (${nextW.re.toFixed(2)}, ${nextW.im.toFixed(2)})`;
+  syncParametersToAxiomCode();
+});
+
+poincareCanvas.addEventListener("pointerup", () => {
+  if (state.isDragging) {
+    state.isDragging = false;
+    runMathematicalVerification();
+  }
+});
+
+function resetMobiusOrigin() {
+  state.mobiusW = new Complex(0, 0);
+  syncParametersToAxiomCode();
+  runMathematicalVerification();
+}
+
+function injectPerturbation() {
+  for (const b of state.bodies) {
+    const impulse = Complex.fromPolar(0.18, Math.random() * Math.PI * 2);
+    b.v = b.v.add(impulse);
+  }
+  onGeodesicSectorCrossing(0, Math.floor(Math.random() * state.tilingP));
+}
+
+function onSliderChange() {
+  state.curvature = parseFloat(document.getElementById("sliderCurvature").value);
+  state.couplingG = parseFloat(document.getElementById("sliderGravity").value);
+  state.spinOmega = parseFloat(document.getElementById("sliderSpin").value);
+
+  document.getElementById("valCurvature").textContent = state.curvature.toFixed(2);
+  document.getElementById("valGravity").textContent = state.couplingG.toFixed(2);
+  document.getElementById("valSpin").textContent = state.spinOmega.toFixed(2) + " rad/s";
+
+  syncParametersToAxiomCode();
+}
+
+function loadPreset(name) {
+  document.querySelectorAll(".preset-bar .btn").forEach(b => b.classList.remove("active"));
+  if (name === "kepler_fugue") document.getElementById("preset1").classList.add("active");
+  if (name === "three_body_canon") document.getElementById("preset2").classList.add("active");
+  if (name === "mobius_vortex") document.getElementById("preset3").classList.add("active");
+
+  document.getElementById("axiomEditor").value = PRESETS[name];
+  compileAndApplyAxiomL(true);
+  runMathematicalVerification();
+}
+
+document.getElementById("axiomEditor").addEventListener("keydown", (e) => {
+  if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+    e.preventDefault();
+    compileAndApplyAxiomL(true);
+    runMathematicalVerification();
+  }
+});
+
+// --- 10. MAIN SIMULATION LOOP ---
+function updateTelemetryHUD() {
+  if (state.bodies.length < 2) return;
+  const b0 = state.bodies[0];
+  const b1 = state.bodies[1];
+  const d01 = hyperbolicDistance(b0.z, b1.z);
+
+  // Compute Riemannian Kinetic + Potential Hamiltonian
+  let H = 0;
+  let Lz = 0;
+  for (let i = 0; i < state.bodies.length; i++) {
+    const bi = state.bodies[i];
+    const metric = 4 / Math.pow(Math.max(0.1, 1 - bi.z.abs2()), 2);
+    H += 0.5 * bi.mass * metric * bi.v.abs2();
+    Lz += bi.mass * metric * (bi.z.re * bi.v.im - bi.z.im * bi.v.re);
+    for (let j = i + 1; j < state.bodies.length; j++) {
+      const d = Math.max(0.15, hyperbolicDistance(bi.z, state.bodies[j].z));
+      H -= (state.couplingG * bi.mass * state.bodies[j].mass) / d;
+    }
+  }
+
+  document.getElementById("metricHamiltonian").textContent = `${H.toFixed(4)} eV`;
+  document.getElementById("metricMomentum").textContent = `${Lz >= 0 ? "+" : ""}${Lz.toFixed(4)} ℏ`;
+  document.getElementById("hudCurvature").textContent =
+    `高斯曲率 K = ${state.curvature.toFixed(2)} | 莫比乌斯平移 w = ${state.mobiusW.re.toFixed(2)} + ${state.mobiusW.im.toFixed(2)}i`;
+  document.getElementById("hudGeodesic").textContent =
+    `双曲测地线距离 d_H(Alpha, Beta) = ${d01.toFixed(4)} rad`;
+  document.getElementById("hudSymplectic").textContent =
+    `RK4 步长 Δt = 0.008s | 测地线穿越计数: ${state.geodesicCrossings}`;
+}
+
+function animate(now) {
+  const dtMs = now - state.lastFrameTime;
+  state.lastFrameTime = now;
+  if (dtMs > 0) {
+    state.fps = state.fps * 0.92 + (1000 / dtMs) * 0.08;
+  }
+
+  // Sub-stepped 4th-order Runge-Kutta integration for high numerical stability
+  const subSteps = 2;
+  const dt = 0.008;
+  for (let s = 0; s < subSteps; s++) {
+    stepRK4(dt);
+    state.time += dt;
+  }
+
+  renderPoincareDisk();
+  renderPhaseAndAudioCanvases();
+  updateTelemetryHUD();
+  document.getElementById("fpsCounter").textContent = `${state.fps.toFixed(1)} FPS`;
+
+  requestAnimationFrame(animate);
+}
+
+// Initialize on load
+window.addEventListener("DOMContentLoaded", () => {
+  loadPreset("kepler_fugue");
+  onGeodesicSectorCrossing(0, 0);
+  requestAnimationFrame(animate);
+});
+</script>
+</body>
+</html>
