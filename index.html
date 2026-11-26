@@ -1,0 +1,1569 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>第七码头的空箱 · 档案推理</title>
+<style>
+:root{
+  --desk:#171310; --desk2:#231b14; --desk3:#2f2419;
+  --paper:#f5eedd; --paper2:#e9dec5; --paper3:#dcd0b4;
+  --ink:#221d17; --ink2:#5c5143; --ink3:#8a7c68;
+  --red:#a33028; --red2:#8b2620;
+  --blue:#1f3f63; --blue2:#2f5b86;
+  --green:#2f5d43;
+  --gold:#c9a227;
+  --line:#d5c7ac;
+  --shadow:0 22px 50px -18px rgba(0,0,0,.85);
+  --z:1;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  min-height:100vh;
+  color:#e8dfcf;
+  font-family:"Songti SC","SimSun","Noto Serif SC","Source Han Serif SC",serif;
+  background:
+    radial-gradient(1100px 520px at 50% -12%, rgba(120,88,50,.42), transparent 62%),
+    radial-gradient(700px 400px at 88% 108%, rgba(90,58,30,.28), transparent 60%),
+    repeating-linear-gradient(92deg, rgba(255,255,255,.014) 0 2px, transparent 2px 8px),
+    repeating-linear-gradient(0deg, rgba(0,0,0,.16) 0 1px, transparent 1px 5px),
+    linear-gradient(158deg,#1e1813,#14100d 55%,#0b0908);
+  background-attachment:fixed;
+}
+body::before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(circle at 50% 45%, transparent 40%, rgba(0,0,0,.55) 100%);
+}
+button{font-family:inherit}
+a{color:inherit}
+
+/* ---------- top bar ---------- */
+.topbar{
+  position:relative;z-index:5;display:flex;align-items:center;gap:14px;
+  padding:14px 22px 12px;border-bottom:1px solid rgba(201,162,39,.22);
+  background:linear-gradient(180deg,rgba(35,27,20,.97),rgba(23,19,16,.82));
+}
+.brand{min-width:0}
+.brand .kicker{font-size:10px;letter-spacing:.34em;color:#a08d6c;text-transform:uppercase}
+.brand h1{margin:2px 0 0;font-size:19px;font-weight:700;letter-spacing:.14em;color:#f0e6d2}
+.brand h1 em{font-style:normal;color:#c9a227}
+.topbar .spacer{flex:1}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:5px 11px;border-radius:999px;
+  border:1px solid rgba(201,162,39,.3);background:rgba(201,162,39,.08);
+  font-size:11.5px;color:#d8c8a6;letter-spacing:.06em;white-space:nowrap}
+.pill b{color:#f3e8ce;font-weight:700}
+.iconbtn{
+  border:1px solid rgba(216,200,166,.22);background:rgba(255,255,255,.04);
+  color:#ded2bb;border-radius:9px;padding:7px 12px;font-size:12.5px;cursor:pointer;
+  letter-spacing:.08em;transition:.18s;
+}
+.iconbtn:hover{background:rgba(201,162,39,.16);border-color:rgba(201,162,39,.5);color:#fff}
+
+/* ---------- tabs ---------- */
+.tabs{position:relative;z-index:9;display:flex;gap:4px;padding:10px 22px 0;
+  border-bottom:1px solid rgba(201,162,39,.16)}
+.tab{
+  appearance:none;border:0;background:transparent;color:#a4957c;cursor:pointer;
+  padding:9px 16px 11px;font-size:13.5px;letter-spacing:.16em;position:relative;transition:.18s;
+}
+.tab[aria-selected="true"]{color:#f6ead1}
+.tab[aria-selected="true"]::after{
+  content:"";position:absolute;left:10px;right:10px;bottom:-1px;height:2px;
+  background:linear-gradient(90deg,transparent,#c9a227,transparent);
+}
+.tab .badge{display:inline-block;min-width:17px;padding:0 5px;margin-left:6px;border-radius:999px;
+  background:rgba(201,162,39,.2);color:#e8d5a4;font-size:10.5px;text-align:center;line-height:17px}
+
+/* ---------- generic ---------- */
+.view{position:relative;z-index:4;display:none;padding:20px 22px 90px;max-width:1560px;margin:0 auto}
+.view.on{display:block}
+.muted{color:#9b8c74}
+.small{font-size:12px}
+
+/* ---------- filter bar ---------- */
+.filterbar{
+  display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:16px;
+  position:sticky;top:0;z-index:8;padding:10px 0;
+  background:linear-gradient(180deg,rgba(20,16,13,.96) 70%,rgba(20,16,13,0));
+}
+.chip{
+  border:1px solid rgba(216,200,166,.2);background:rgba(255,255,255,.035);
+  color:#c9bba2;border-radius:999px;padding:6px 13px;font-size:12px;cursor:pointer;
+  letter-spacing:.08em;transition:.16s;white-space:nowrap;
+}
+.chip:hover{border-color:rgba(201,162,39,.45);color:#f0e4cc}
+.chip.on{background:rgba(201,162,39,.18);border-color:rgba(201,162,39,.62);color:#fff3d4}
+.searchbox{flex:1;min-width:150px;position:relative}
+.searchbox input{
+  width:100%;padding:7px 12px 7px 30px;border-radius:999px;
+  border:1px solid rgba(216,200,166,.2);background:rgba(0,0,0,.28);
+  color:#f0e4cc;font-size:12.5px;font-family:inherit;outline:none;
+}
+.searchbox input::placeholder{color:#7d7059}
+.searchbox svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);opacity:.5}
+
+/* ---------- evidence grid ---------- */
+.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(228px,1fr))}
+.evcard{
+  position:relative;text-align:left;cursor:pointer;border:0;padding:0;
+  border-radius:3px;background:var(--paper);
+  box-shadow:0 1px 0 rgba(255,255,255,.6) inset,0 10px 22px -10px rgba(0,0,0,.8);
+  transition:transform .16s ease, box-shadow .16s ease;
+  overflow:hidden;
+}
+.evcard::after{
+  content:"";position:absolute;inset:0;pointer-events:none;border-radius:3px;
+  background:
+    repeating-linear-gradient(0deg, rgba(120,90,50,.05) 0 1px, transparent 1px 4px),
+    radial-gradient(130% 80% at 12% -10%, rgba(255,255,255,.55), transparent 55%);
+}
+.evcard:hover{transform:translateY(-3px) rotate(-.35deg);box-shadow:0 18px 34px -14px rgba(0,0,0,.9)}
+.evcard .inner{position:relative;z-index:2;padding:14px 15px 13px;color:var(--ink)}
+.evcard .row1{display:flex;align-items:center;gap:7px;margin-bottom:8px}
+.evno{font-family:"Courier New",monospace;font-size:10.5px;letter-spacing:.1em;color:#8b7a5e}
+.tag{font-size:9.5px;letter-spacing:.12em;padding:2px 6px;border-radius:2px;border:1px solid currentColor}
+.tag.t-map{color:#7a5a1e;background:rgba(201,162,39,.13)}
+.tag.t-record{color:#2c4a6b;background:rgba(47,91,134,.1)}
+.tag.t-receipt{color:#7c3a26;background:rgba(163,48,40,.09)}
+.tag.t-testimony{color:#4a5a2c;background:rgba(47,93,67,.1)}
+.clk{font-size:9px;letter-spacing:.08em;padding:2px 5px;border-radius:2px;font-weight:700}
+.clk.h{background:#e8dcc0;color:#7a5a1e;border:1px solid #cdbd93}
+.clk.s{background:#dde6ee;color:#2c4a6b;border:1px solid #b8c9d8}
+.evcard h3{margin:0 0 6px;font-size:15px;font-weight:700;letter-spacing:.04em;line-height:1.35}
+.evcard p{margin:0;font-size:11.5px;line-height:1.55;color:#6a5d4b}
+.evcard .foot{display:flex;align-items:center;gap:6px;margin-top:10px;font-size:10px;color:#8f8069}
+.dot{width:7px;height:7px;border-radius:50%;background:#c9a227;box-shadow:0 0 0 3px rgba(201,162,39,.18)}
+.star{margin-left:auto;font-size:14px;color:#b9a67f;opacity:.55}
+.star.on{color:#c9a227;opacity:1}
+.evcard[data-read="1"] .dot{background:#3f6b4f;box-shadow:0 0 0 3px rgba(63,107,79,.16)}
+.evcard[data-star="1"]{outline:2px solid rgba(201,162,39,.55);outline-offset:-2px}
+
+/* ---------- reader ---------- */
+.reader{
+  display:none;min-height:100vh;flex-direction:column;
+  background:
+    radial-gradient(900px 460px at 50% -10%, rgba(90,66,38,.35), transparent 60%),
+    #0e0b09;
+}
+.reader.on{display:flex}
+body.reading .topbar,body.reading .tabs,body.reading main{display:none}
+.rtop{
+  display:flex;align-items:center;gap:10px;padding:10px 16px;
+  background:linear-gradient(180deg,rgba(30,24,18,.98),rgba(20,16,13,.92));
+  border-bottom:1px solid rgba(201,162,39,.22);
+  position:sticky;top:0;z-index:20;
+}
+.rtop .ttl{font-size:13px;color:#e9dcc2;letter-spacing:.1em;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rstage{flex:1;padding:26px 16px 30px;-webkit-overflow-scrolling:touch}
+.sheetwrap{max-width:820px;margin:0 auto}
+.sheet{
+  background:var(--paper);border-radius:3px;box-shadow:var(--shadow);position:relative;
+  padding:34px 34px 30px;
+}
+.sheet::before{
+  content:"";position:absolute;inset:0;border-radius:3px;pointer-events:none;
+  background:
+    repeating-linear-gradient(0deg, rgba(120,90,50,.055) 0 1px, transparent 1px 4px),
+    radial-gradient(120% 70% at 15% -10%, rgba(255,255,255,.6), transparent 55%),
+    radial-gradient(80% 60% at 100% 100%, rgba(140,100,50,.13), transparent 60%);
+}
+.doc{position:relative;z-index:2;color:var(--ink);font-size:calc(15px * var(--z));line-height:1.62}
+.doc .doc-head{display:flex;gap:14px;align-items:flex-start;border-bottom:2px solid var(--ink);padding-bottom:.6em;margin-bottom:1em}
+.doc .doc-no{font-family:"Courier New",monospace;font-size:.72em;letter-spacing:.14em;color:#8a7a5e;padding-top:.35em;min-width:2.4em;white-space:nowrap}
+.doc .doc-title{font-size:1.5em;font-weight:700;letter-spacing:.1em;line-height:1.2}
+.doc .doc-meta{font-size:.72em;color:#7d6f59;letter-spacing:.1em;margin-top:.3em}
+.doc h4{font-size:1em;margin:1.1em 0 .4em;letter-spacing:.12em;border-left:3px solid var(--red);padding-left:.5em}
+.doc p{margin:.5em 0}
+.doc .lead{font-size:1.02em}
+.doc .small{font-size:.78em;color:#6d604d}
+.doc .hl{background:linear-gradient(180deg,transparent 58%,rgba(201,162,39,.5) 58%);padding:0 1px}
+.doc .red{color:var(--red);font-weight:700}
+.doc .blue{color:var(--blue);font-weight:700}
+.doc .mono{font-family:"Courier New",monospace;letter-spacing:.04em}
+
+/* tables */
+table.paper-t{width:100%;border-collapse:collapse;margin:.7em 0;font-size:.86em}
+table.paper-t th,table.paper-t td{border:1px solid #c3b598;padding:.42em .5em;vertical-align:top}
+table.paper-t th{background:rgba(120,90,50,.1);font-weight:700;letter-spacing:.08em;text-align:left}
+table.paper-t td.num{font-family:"Courier New",monospace;white-space:nowrap}
+table.paper-t tr.bad td{background:rgba(163,48,40,.10)}
+table.paper-t tr.bad td:first-child{box-shadow:inset 3px 0 0 var(--red)}
+
+/* stamp */
+.stamp{
+  display:inline-block;border:.18em double var(--red);color:var(--red);
+  padding:.1em .55em;font-weight:700;letter-spacing:.16em;
+  transform:rotate(-7deg);opacity:.82;border-radius:.2em;
+  mix-blend-mode:multiply;font-size:.9em;line-height:1.25;
+}
+.stamp.s{border-color:var(--blue);color:var(--blue);transform:rotate(5deg);letter-spacing:.1em}
+.stamp.big{font-size:1.5em;border-width:.14em;transform:rotate(-9deg)}
+.hand{font-family:"Xingkai SC","STXingkai","KaiTi","Kaiti SC","楷体",cursive;
+  color:#26456b;font-size:1.06em;transform:rotate(-.5deg);display:inline-block}
+.hand.r{color:#9b2c22}
+.margin-note{
+  border-left:2px solid rgba(163,48,40,.5);padding:.2em 0 .2em .8em;margin:.8em 0;
+  font-family:"Xingkai SC","STXingkai","KaiTi",cursive;font-size:.95em;color:#8a3a2c;
+  transform:rotate(-.6deg);
+}
+.qa{margin:.6em 0}
+.qa .q{font-weight:700;color:#3a332a}
+.qa .a{padding-left:1.1em;color:#2b251e}
+.qa .a::before{content:"— ";color:#a33028}
+
+/* punch tape */
+.tape{
+  background:#f7f2e6;border:1px solid #c9bda3;border-radius:2px;
+  padding:1em;margin:.8em 0;position:relative;overflow:hidden;
+  background-image:repeating-linear-gradient(90deg,rgba(0,0,0,.045) 0 1px,transparent 1px 22px);
+  font-family:"Courier New",monospace;font-size:.8em;
+}
+.tape .tr{display:flex;gap:.9em;padding:.22em 0;border-bottom:1px dotted #d6cbb2}
+.tape .tr:last-child{border-bottom:0}
+.tape .tr span:first-child{width:6em;color:#7a6a50}
+.tape .hole{display:inline-block;width:.7em;height:.7em;border-radius:50%;background:#2b251e;vertical-align:middle;margin-right:.35em}
+
+/* map */
+.mapbox{margin:.6em 0;border:1px solid #c3b598;background:#efe7d4;padding:.5em;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.map-svg{width:100%;min-width:560px;height:auto;display:block}
+.maplegend{display:grid;grid-template-columns:1fr;gap:.15em;margin-top:.7em;font-size:.78em}
+.maplegend div{display:flex;justify-content:space-between;gap:.6em;border-bottom:1px dotted #c9bda3;padding:.18em 0;white-space:nowrap}
+.maplegend b{font-family:"Courier New",monospace}
+
+/* reader footer tools */
+.rtools{
+  display:flex;flex-wrap:wrap;gap:8px;align-items:center;
+  padding:10px 16px calc(10px + env(safe-area-inset-bottom));
+  background:linear-gradient(0deg,rgba(20,16,13,.99),rgba(20,16,13,.94));
+  border-top:1px solid rgba(201,162,39,.22);
+  position:sticky;bottom:0;z-index:20;
+}
+.tool{
+  border:1px solid rgba(216,200,166,.22);background:rgba(255,255,255,.045);
+  color:#ded2bb;border-radius:8px;padding:8px 13px;font-size:12.5px;cursor:pointer;
+  letter-spacing:.06em;transition:.16s;
+}
+.tool:hover{background:rgba(201,162,39,.16);border-color:rgba(201,162,39,.5);color:#fff}
+.tool.on{background:rgba(201,162,39,.22);border-color:rgba(201,162,39,.7);color:#fff6dc}
+.tool.zoom{font-family:"Courier New",monospace;min-width:44px;text-align:center}
+.tool.primary{background:linear-gradient(180deg,#b8382e,#8b2620);border-color:#c9503f;color:#fff}
+.tool.primary:hover{background:linear-gradient(180deg,#c9453a,#9c2f27)}
+
+/* timeline add popover */
+.pop{
+  position:fixed;z-index:80;left:50%;bottom:0;transform:translate(-50%,100%);
+  width:min(520px,100vw);background:#201a14;border:1px solid rgba(201,162,39,.35);
+  border-radius:14px 14px 0 0;padding:16px 18px calc(18px + env(safe-area-inset-bottom));
+  transition:transform .22s ease;box-shadow:0 -20px 60px rgba(0,0,0,.7);
+}
+.pop.on{transform:translate(-50%,0)}
+.pop h4{margin:0 0 12px;font-size:13px;letter-spacing:.16em;color:#e9dcc2}
+.pop .frm{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pop label{font-size:10.5px;letter-spacing:.12em;color:#9b8c74;display:block;margin-bottom:4px}
+.pop input,.pop select{
+  width:100%;padding:8px 10px;border-radius:8px;border:1px solid rgba(216,200,166,.24);
+  background:rgba(0,0,0,.3);color:#f0e4cc;font-size:13px;font-family:inherit;outline:none;
+}
+.pop input:focus,.pop select:focus{border-color:rgba(201,162,39,.6)}
+.pop .full{grid-column:1/-1}
+.pop .acts{display:flex;gap:8px;margin-top:14px}
+.pop .acts .tool{flex:1;text-align:center}
+
+/* ---------- timeline ---------- */
+.tlwrap{max-width:1080px;margin:0 auto}
+.tlhead{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:14px}
+.tlgrid{position:relative}
+.tlheadrow{display:grid;grid-template-columns:58px 1fr 58px;gap:0;
+  border-bottom:1px solid rgba(201,162,39,.28);padding-bottom:5px;margin-bottom:2px}
+.tlheadrow div{font-size:10px;letter-spacing:.14em;color:#8d7f68}
+.tlheadrow .h{text-align:right;padding-right:8px}
+.tlheadrow .s{text-align:left;padding-left:8px}
+.tlrow{
+  display:grid;grid-template-columns:58px 1fr 58px;align-items:center;
+  border-bottom:1px solid rgba(201,162,39,.1);
+}
+.tlrow .h,.tlrow .s{font-family:"Courier New",monospace;font-size:12px;padding:11px 8px;letter-spacing:.04em}
+.tlrow .h{color:#e0cfa6;text-align:right;border-right:1px solid rgba(201,162,39,.28)}
+.tlrow .s{color:#a9c0d4;border-left:1px solid rgba(201,162,39,.18)}
+.tlrow .body{padding:9px 12px;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.tlrow .body .lbl{font-size:13px;color:#e6dac2}
+.tlitem{
+  display:inline-flex;align-items:center;gap:6px;padding:3px 8px;border-radius:5px;
+  background:rgba(201,162,39,.13);border:1px solid rgba(201,162,39,.3);
+  font-size:11.5px;color:#e9dcc2;cursor:pointer;
+}
+.tlitem .x{opacity:.55;font-size:13px;line-height:1}
+.tlitem .x:hover{opacity:1;color:#e0705f}
+.tl-empty{padding:34px 20px;text-align:center;color:#8d7f68;font-size:13px;line-height:2}
+.tl-note{font-size:12px;color:#9b8c74;margin-top:14px;line-height:1.8}
+
+/* ---------- case ---------- */
+.casewrap{max-width:980px;margin:0 auto}
+.qcard{
+  background:linear-gradient(180deg,rgba(38,30,22,.72),rgba(26,21,17,.72));
+  border:1px solid rgba(201,162,39,.2);border-radius:12px;
+  padding:18px 20px;margin-bottom:14px;
+}
+.qcard h3{margin:0 0 4px;font-size:16px;letter-spacing:.08em;color:#f4e9d2}
+.qcard .sub{font-size:11.5px;color:#9b8c74;margin-bottom:12px;letter-spacing:.06em}
+.opts{display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.opt{
+  text-align:left;border:1px solid rgba(216,200,166,.18);background:rgba(255,255,255,.03);
+  color:#cfc1a8;border-radius:9px;padding:10px 12px;font-size:12.8px;cursor:pointer;
+  line-height:1.45;transition:.15s;font-family:inherit;
+}
+.opt:hover{border-color:rgba(201,162,39,.42);color:#f0e4cc}
+.opt.on{background:rgba(201,162,39,.18);border-color:rgba(201,162,39,.7);color:#fff6dc}
+.opt .k{display:inline-block;width:1.5em;color:#c9a227;font-weight:700}
+.evsel{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;max-height:118px;overflow-y:auto;padding-right:4px}
+.evchip{
+  font-size:11px;padding:4px 9px;border-radius:999px;cursor:pointer;
+  border:1px solid rgba(216,200,166,.18);background:rgba(255,255,255,.03);color:#a99b83;
+  transition:.14s;white-space:nowrap;
+}
+.evchip:hover{border-color:rgba(201,162,39,.4);color:#e6d9bd}
+.evchip.on{background:rgba(163,48,40,.28);border-color:rgba(200,90,74,.8);color:#fbe3dd}
+.hintrow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:12px}
+.hintbtn{
+  border:1px dashed rgba(201,162,39,.4);background:transparent;color:#cbb88e;
+  border-radius:8px;padding:6px 12px;font-size:11.5px;cursor:pointer;letter-spacing:.08em;
+}
+.hintbtn:hover{background:rgba(201,162,39,.1)}
+.hintbtn[disabled]{opacity:.35;cursor:default}
+.hintbox{
+  margin-top:10px;padding:11px 14px;border-radius:9px;font-size:12.5px;line-height:1.8;
+  background:rgba(201,162,39,.08);border-left:3px solid #c9a227;color:#e2d4b6;display:none;
+}
+.hintbox.on{display:block}
+.verdict{
+  margin-top:14px;padding:12px 15px;border-radius:10px;font-size:13px;line-height:1.8;display:none;
+}
+.verdict.ok{display:block;background:rgba(47,93,67,.2);border:1px solid rgba(80,140,105,.5);color:#cfe7d8}
+.verdict.bad{display:block;background:rgba(163,48,40,.16);border:1px solid rgba(190,80,66,.45);color:#f0cfc9}
+
+/* solution */
+.solution{
+  max-width:900px;margin:0 auto;background:var(--paper);color:var(--ink);
+  border-radius:4px;padding:34px 32px;box-shadow:var(--shadow);line-height:1.85;font-size:15px;
+}
+.solution h2{margin:0 0 6px;font-size:24px;letter-spacing:.12em}
+.solution h3{margin:1.4em 0 .4em;font-size:16px;letter-spacing:.1em;border-left:4px solid var(--red);padding-left:.6em}
+.solution .keyline{font-size:12px;letter-spacing:.16em;color:#8a7a5e;margin-bottom:1.2em;
+  border-bottom:2px solid var(--ink);padding-bottom:.6em}
+.solution table{width:100%;border-collapse:collapse;font-size:13px;margin:.8em 0}
+.solution th,.solution td{border:1px solid #c3b598;padding:.4em .5em;text-align:left;vertical-align:top}
+.solution th{background:rgba(120,90,50,.1)}
+.solution .ans{font-weight:700;color:var(--red)}
+
+/* intro */
+.intro{
+  display:none;min-height:100vh;align-items:center;justify-content:center;
+  background:
+    radial-gradient(900px 460px at 50% 0%, rgba(90,66,38,.3), transparent 60%),
+    #0e0b09;
+  padding:20px;
+}
+.intro.on{display:flex}
+body.introing .topbar,body.introing .tabs,body.introing main{display:none}
+.introcard{
+  max-width:620px;width:100%;background:var(--paper);color:var(--ink);
+  border-radius:4px;padding:34px 32px;box-shadow:var(--shadow);line-height:1.9;font-size:14.5px;
+  max-height:88vh;overflow:auto;
+}
+.introcard h2{margin:0 0 4px;font-size:25px;letter-spacing:.14em}
+.introcard .sub{font-size:11.5px;letter-spacing:.2em;color:#8a7a5e;margin-bottom:1.1em;
+  border-bottom:2px solid var(--ink);padding-bottom:.5em}
+.introcard h3{font-size:14px;letter-spacing:.1em;margin:1.1em 0 .3em;color:var(--red)}
+.introcard ul{margin:.3em 0;padding-left:1.2em}
+.introcard li{margin:.25em 0}
+.introcard .btnrow{display:flex;gap:10px;margin-top:1.4em;flex-wrap:wrap}
+.introcard button{
+  flex:1;min-width:150px;padding:11px 16px;border-radius:9px;cursor:pointer;
+  border:1px solid rgba(120,90,50,.4);background:#efe6d2;color:#3a332a;
+  font-family:inherit;font-size:14px;letter-spacing:.12em;
+}
+.introcard button.primary{background:linear-gradient(180deg,#b8382e,#8b2620);border-color:#8b2620;color:#fff}
+
+/* toast */
+.toast{
+  position:fixed;left:50%;bottom:26px;transform:translate(-50%,20px);z-index:90;
+  background:#2a2119;border:1px solid rgba(201,162,39,.45);color:#f0e4cc;
+  padding:10px 18px;border-radius:999px;font-size:12.5px;letter-spacing:.06em;
+  opacity:0;pointer-events:none;transition:.22s;box-shadow:0 12px 30px rgba(0,0,0,.6);
+}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+
+/* ---------- responsive ---------- */
+@media (max-width:760px){
+  .topbar{padding:11px 14px 10px;gap:8px;flex-wrap:wrap;row-gap:9px}
+  .brand{flex:1 0 100%;min-width:0}
+  .brand h1{font-size:15px;letter-spacing:.1em}
+  .brand .kicker{font-size:9px;letter-spacing:.26em}
+  .topbar .spacer{display:none}
+  .pill{font-size:10.5px;padding:4px 9px}
+  .iconbtn{padding:6px 9px;font-size:11.5px}
+  .iconbtn + .iconbtn{margin-left:auto}
+  .tabs{padding:6px 8px 0;gap:0}
+  .tab{padding:8px 9px 10px;font-size:12.5px;letter-spacing:.1em;flex:1}
+  .view{padding:14px 12px 130px}
+  .grid{gap:10px;grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+  .evcard .inner{padding:11px 11px 10px}
+  .evcard h3{font-size:13.5px}
+  .evcard p{font-size:10.5px}
+  .sheet{padding:20px 16px 18px}
+  .doc{font-size:calc(14.5px * var(--z))}
+  .doc .doc-title{font-size:1.3em}
+  .rstage{padding:14px 8px 50px}
+  .rtools{padding:8px 10px calc(8px + env(safe-area-inset-bottom));gap:6px}
+  .tool{padding:7px 10px;font-size:11.5px}
+  .rtools .tool{flex:1 1 auto;justify-content:center;text-align:center;min-width:0}
+  .rtools .muted{display:none}
+  .tlrow{grid-template-columns:48px 1fr 48px}
+  .tlrow .h,.tlrow .s{font-size:10.5px;padding:8px 4px}
+  .tlheadrow{grid-template-columns:48px 1fr 48px}
+  .qcard{padding:14px 13px}
+  .qcard h3{font-size:14.5px}
+  .opts{grid-template-columns:1fr}
+  .solution{padding:22px 16px;font-size:14px}
+  .introcard{padding:24px 18px;font-size:13.5px;max-height:92vh}
+  .introcard h2{font-size:20px}
+  .filterbar{padding:8px 0}
+  .chip{padding:5px 10px;font-size:11px}
+}
+@media (max-width:400px){
+  .grid{grid-template-columns:1fr 1fr}
+  .evcard p{display:none}
+  .brand h1{font-size:14px}
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <div class="kicker">CASE FILE 1989-1214</div>
+    <h1>第七码头的<em>空箱</em></h1>
+  </div>
+  <div class="spacer"></div>
+  <span class="pill">已读 <b id="pRead">0</b>/21</span>
+  <span class="pill">标记 <b id="pStar">0</b></span>
+  <button class="iconbtn" id="btnIntro">案情</button>
+  <button class="iconbtn" id="btnReset">重开</button>
+</header>
+
+<div class="tabs" role="tablist">
+  <button class="tab" role="tab" data-view="desk" aria-selected="true">调查桌</button>
+  <button class="tab" role="tab" data-view="tl" aria-selected="false">时间线 <span class="badge" id="bTl">0</span></button>
+  <button class="tab" role="tab" data-view="case" aria-selected="false">结案</button>
+</div>
+
+<main>
+  <section class="view on" id="view-desk">
+    <div class="filterbar">
+      <button class="chip on" data-f="all">全部</button>
+      <button class="chip" data-f="testimony">证词</button>
+      <button class="chip" data-f="record">记录</button>
+      <button class="chip" data-f="receipt">单据</button>
+      <button class="chip" data-f="map">地图</button>
+      <button class="chip" data-f="unread">未读</button>
+      <button class="chip" data-f="star">已标记</button>
+      <div class="searchbox">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#c9bba2" stroke-width="2.4"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+        <input id="q" type="search" placeholder="搜索档案…" autocomplete="off">
+      </div>
+    </div>
+    <div class="grid" id="grid"></div>
+  </section>
+
+  <section class="view" id="view-tl">
+    <div class="tlwrap">
+      <div class="tlhead">
+        <div>
+          <div style="font-size:16px;letter-spacing:.1em;color:#f0e4cc">案发夜时间线</div>
+          <div class="small muted" style="margin-top:4px">左栏港钟，右栏标准时。两栏相差 12 分钟，需自行换算。</div>
+        </div>
+        <div class="spacer" style="flex:1"></div>
+        <button class="tool" id="btnAddTl">＋ 添加条目</button>
+      </div>
+      <div class="tlgrid" id="tlgrid"></div>
+      <div class="tl-empty" id="tlEmpty">时间线还是空的。<br>在阅读档案时点「加入时间线」，或用上方按钮手动添加。</div>
+      <div class="tl-note">
+        提示：同一条记录在不同材料里可能用不同的钟。先确定两套钟差多少，再决定信哪一份。
+      </div>
+    </div>
+  </section>
+
+  <section class="view" id="view-case">
+    <div class="casewrap" id="casewrap"></div>
+  </section>
+</main>
+
+<!-- reader -->
+<div class="reader" id="reader">
+  <div class="rtop">
+    <button class="tool" id="rPrev">‹ 上一份</button>
+    <div class="ttl" id="rTtl"></div>
+    <button class="tool" id="rNext">下一份 ›</button>
+    <button class="tool" id="rClose">关闭 ✕</button>
+  </div>
+  <div class="rstage" id="rStage"><div class="sheetwrap"><div class="sheet" id="rSheet"></div></div></div>
+  <div class="rtools">
+    <button class="tool zoom" id="zOut">A−</button>
+    <button class="tool zoom" id="zIn">A＋</button>
+    <button class="tool zoom" id="zReset">1.0×</button>
+    <button class="tool" id="rStar">☆ 标记</button>
+    <button class="tool" id="rTl">⟲ 加入时间线</button>
+    <button class="tool" id="rNote">✎ 笔记</button>
+    <span class="muted small" id="rPos" style="margin-left:auto"></span>
+  </div>
+</div>
+
+<!-- add to timeline popover -->
+<div class="pop" id="pop">
+  <h4>加入时间线</h4>
+  <div class="frm">
+    <div><label>时间</label><input type="time" id="popTime" value="21:14"></div>
+    <div><label>这套钟是</label>
+      <select id="popClock"><option value="h">港钟（港区内部）</option><option value="s">标准时（铁路/电报/医务）</option></select>
+    </div>
+    <div class="full"><label>条目说明</label><input id="popLabel" placeholder="例如：罗四海出东侧卡口"></div>
+  </div>
+  <div class="acts">
+    <button class="tool" id="popCancel">取消</button>
+    <button class="tool primary" id="popOk">加入</button>
+  </div>
+</div>
+
+<!-- intro -->
+<div class="intro" id="intro">
+  <div class="introcard">
+    <h2>第七码头的空箱</h2>
+    <div class="sub">临海港保税仓库 · 一九八九年十二月十四日夜</div>
+    <p>四十七卷纪实摄影原片，原定明日装车赴省城巡展。今晨开箱，航空箱是空的。</p>
+    <p>六个人那晚都到过第七码头。每个人都有一段听起来合理的行踪。桌上是港区留下的二十一份旧档案——出入登记、值班表、装卸记录、电话单、过磅单、证词。</p>
+    <h3>你要回答四个问题</h3>
+    <ul>
+      <li>谁调走了底片</li>
+      <li>什么时间动的手</li>
+      <li>走了哪条路线</li>
+      <li>伪造了哪一份记录</li>
+    </ul>
+    <h3>怎么用这张桌子</h3>
+    <ul>
+      <li>点开档案可放大阅读，右上角可标记、写笔记。</li>
+      <li>看到带时间的材料，用「加入时间线」摆到时间轴上。</li>
+      <li>调查桌顶部可按类型筛选、搜索。</li>
+      <li>结案时四项结论都要选，每项还要勾出支持它的证据——只猜对人名不算结案。</li>
+      <li>进度自动存在本机，关掉再打开可以接着查。</li>
+    </ul>
+    <div class="btnrow">
+      <button id="introGo" class="primary">开始调查</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   EVIDENCE
+   ============================================================ */
+const DOCS = [
+{
+  id:'e01', no:'E-01', title:'港区平面图（步行时间）', type:'map',
+  clock:'—', src:'港务局总务科 1989年制图',
+  brief:'第七码头各点位置与步行用时，港区内部通行全靠这张图。',
+  body:`
+  <div class="mapbox">
+  <svg class="map-svg" viewBox="0 0 960 660" role="img" aria-label="第七码头平面图">
+    <rect x="0" y="0" width="960" height="660" fill="#efe7d4"/>
+    <rect x="0" y="0" width="960" height="86" fill="#cfdcd8"/>
+    <path d="M0 86 H960" stroke="#8fa9a3" stroke-width="2"/>
+    <text x="24" y="50" font-size="15" fill="#5c7a74" letter-spacing="6">海</text>
+    <text x="880" y="50" font-size="15" fill="#5c7a74" letter-spacing="6">面</text>
+
+    <!-- boundary -->
+    <rect x="26" y="104" width="908" height="530" fill="none" stroke="#a89672" stroke-width="2" stroke-dasharray="9 6"/>
+    <text x="40" y="126" font-size="11" fill="#8a7a5e" letter-spacing="3">海关监管区 · 围网</text>
+
+    <!-- buildings -->
+    <g font-family="'Songti SC',SimSun,serif" font-size="13" fill="#2b251e">
+      <rect x="46" y="150" width="150" height="66" fill="#e3d8bf" stroke="#a89672"/>
+      <text x="121" y="178" text-anchor="middle">港区公安分局</text>
+      <text x="121" y="196" text-anchor="middle" font-size="10" fill="#7d6f59">巡逻点 5</text>
+
+      <rect x="690" y="14" width="170" height="60" fill="#e3d8bf" stroke="#a89672"/>
+      <text x="775" y="42" text-anchor="middle">客运码头</text>
+      <text x="775" y="60" text-anchor="middle" font-size="10" fill="#7d6f59">候船室 · 售票处</text>
+
+      <rect x="330" y="200" width="112" height="82" fill="#e8ddc4" stroke="#a89672"/>
+      <text x="386" y="234" text-anchor="middle">仓库 B-1</text>
+      <text x="386" y="254" text-anchor="middle" font-size="10" fill="#7d6f59">五金</text>
+
+      <rect x="462" y="200" width="112" height="82" fill="#e8ddc4" stroke="#a89672"/>
+      <text x="518" y="234" text-anchor="middle">仓库 B-2</text>
+      <text x="518" y="254" text-anchor="middle" font-size="10" fill="#7d6f59">纺织品</text>
+
+      <rect x="606" y="196" width="126" height="90" fill="#f0e2c0" stroke="#a33028" stroke-width="2.4"/>
+      <text x="669" y="232" text-anchor="middle" font-weight="bold" fill="#a33028">仓库 B-3</text>
+      <text x="669" y="252" text-anchor="middle" font-size="10" fill="#a33028">保税 · 底片</text>
+      <text x="669" y="268" text-anchor="middle" font-size="10" fill="#7d6f59">封条 0417</text>
+
+      <rect x="30" y="292" width="72" height="64" fill="#e3d8bf" stroke="#a89672"/>
+      <text x="66" y="318" text-anchor="middle">西侧</text>
+      <text x="66" y="336" text-anchor="middle">大门</text>
+      <text x="66" y="350" text-anchor="middle" font-size="10" fill="#a33028">已落锁</text>
+
+      <rect x="858" y="292" width="76" height="64" fill="#e3d8bf" stroke="#a89672"/>
+      <text x="896" y="318" text-anchor="middle">东侧</text>
+      <text x="896" y="336" text-anchor="middle">卡口</text>
+      <text x="896" y="350" text-anchor="middle" font-size="10" fill="#2f5d43">夜间开放</text>
+
+      <rect x="300" y="392" width="150" height="70" fill="#e3d8bf" stroke="#a89672"/>
+      <text x="375" y="422" text-anchor="middle">装卸队休息室</text>
+      <text x="375" y="440" text-anchor="middle" font-size="10" fill="#7d6f59">值班台帐在此</text>
+
+      <rect x="130" y="392" width="130" height="70" fill="#e3d8bf" stroke="#a89672"/>
+      <text x="195" y="422" text-anchor="middle">调度室</text>
+      <text x="195" y="440" text-anchor="middle" font-size="10" fill="#7d6f59">钥匙柜 · 电话</text>
+
+      <rect x="520" y="392" width="170" height="88" fill="#e8ddc4" stroke="#a89672"/>
+      <text x="605" y="424" text-anchor="middle">堆场</text>
+      <text x="605" y="442" text-anchor="middle" font-size="10" fill="#7d6f59">空箱暂存</text>
+      <text x="605" y="458" text-anchor="middle" font-size="10" fill="#7d6f59">叉车通道</text>
+
+      <rect x="836" y="452" width="120" height="110" fill="#dfe6d8" stroke="#6f8a6a"/>
+      <text x="896" y="500" text-anchor="middle">铁路专用线</text>
+      <text x="896" y="520" text-anchor="middle" font-size="11" fill="#2f5d43">12 道</text>
+      <text x="896" y="538" text-anchor="middle" font-size="10" fill="#7d6f59">巡展车皮</text>
+
+      <rect x="120" y="530" width="130" height="62" fill="#e3d8bf" stroke="#a89672"/>
+      <text x="185" y="558" text-anchor="middle">港区医务室</text>
+      <text x="185" y="576" text-anchor="middle" font-size="10" fill="#7d6f59">夜班 1 人</text>
+
+      <rect x="380" y="530" width="160" height="62" fill="#e3d8bf" stroke="#a89672"/>
+      <text x="460" y="558" text-anchor="middle">电报局营业厅</text>
+      <text x="460" y="576" text-anchor="middle" font-size="10" fill="#7d6f59">长途台</text>
+    </g>
+
+    <!-- routes -->
+    <g stroke="#a33028" stroke-width="2" fill="none" stroke-dasharray="7 5">
+      <path d="M700 250 L858 318"/>
+      <path d="M896 356 L896 452"/>
+    </g>
+    <g font-family="'Courier New',monospace" font-size="11" fill="#a33028">
+      <rect x="752" y="264" width="52" height="17" fill="#efe7d4" opacity=".85"/>
+      <text x="778" y="277" text-anchor="middle">4 分钟</text>
+      <rect x="903" y="388" width="52" height="17" fill="#efe7d4" opacity=".85"/>
+      <text x="929" y="401" text-anchor="middle">6 分钟</text>
+    </g>
+
+    <g stroke="#2f5d43" stroke-width="1.6" fill="none" stroke-dasharray="3 4" opacity=".8">
+      <path d="M606 240 L102 318"/>
+      <path d="M680 196 L760 74"/>
+      <path d="M620 286 L250 530"/>
+      <path d="M640 286 L450 392"/>
+      <path d="M606 262 L260 392"/>
+      <path d="M450 430 L858 340"/>
+    </g>
+    <g font-family="'Courier New',monospace" font-size="10.5" fill="#2f5d43">
+      <rect x="330" y="256" width="52" height="16" fill="#efe7d4" opacity=".85"/>
+      <text x="356" y="268" text-anchor="middle">9 分钟</text>
+      <rect x="706" y="126" width="52" height="16" fill="#efe7d4" opacity=".85"/>
+      <text x="732" y="138" text-anchor="middle">8 分钟</text>
+      <rect x="400" y="388" width="56" height="16" fill="#efe7d4" opacity=".85"/>
+      <text x="428" y="400" text-anchor="middle">11 分钟</text>
+      <rect x="534" y="336" width="46" height="16" fill="#efe7d4" opacity=".85"/>
+      <text x="557" y="348" text-anchor="middle">5 分钟</text>
+      <rect x="410" y="316" width="46" height="16" fill="#efe7d4" opacity=".85"/>
+      <text x="433" y="328" text-anchor="middle">3 分钟</text>
+      <rect x="620" y="368" width="46" height="16" fill="#efe7d4" opacity=".85"/>
+      <text x="643" y="380" text-anchor="middle">8 分钟</text>
+    </g>
+
+    <!-- west detour -->
+    <path d="M66 356 L66 596 L820 596 L880 562" stroke="#8a7a5e" stroke-width="1.4" fill="none" stroke-dasharray="2 5"/>
+    <text x="440" y="588" font-family="'Courier New',monospace" font-size="10.5" fill="#8a7a5e">绕行港外 14 分钟（夜间不可通行）</text>
+
+    <g font-family="'Songti SC',SimSun,serif" font-size="11" fill="#5c5143">
+      <text x="40" y="648">比例尺 1:2000　·　图上距离已折算为步行用时（含转弯与绕行）</text>
+    </g>
+  </svg>
+  </div>
+
+  <div class="maplegend">
+    <div><span>B-3 → 东侧卡口</span><b>4 分</b></div>
+    <div><span>东侧卡口 → 12 道</span><b>6 分</b></div>
+    <div><span>B-3 → 西侧大门</span><b>9 分</b></div>
+    <div><span>西侧大门 → 12 道</span><b>14 分（绕港外）</b></div>
+    <div><span>B-3 → 客运码头</span><b>8 分</b></div>
+    <div><span>B-3 → 港区医务室</span><b>11 分</b></div>
+    <div><span>B-3 → 装卸队休息室</span><b>5 分</b></div>
+    <div><span>B-3 → 调度室</span><b>3 分</b></div>
+    <div><span>装卸队休息室 → 东侧卡口</span><b>8 分</b></div>
+    <div><span>电报局营业厅 → B-3</span><b>14 分</b></div>
+  </div>
+
+  <h4>读图要点</h4>
+  <p class="small">港区围网只在西侧大门与东侧卡口两处开口。围网外绕行需经港区外道路，夜间西侧大门落锁后无法通行。铁路专用线 12 道在围网之内，由东侧卡口进出。</p>
+  <p class="small">所有用时为成人正常步行速度，已含转弯、上下台阶与绕行，不含停留。</p>
+  `
+},
+{
+  id:'e02', no:'E-02', title:'调度室电话登记簿', type:'record',
+  clock:'h', src:'港区调度室 · 当值 顾承志',
+  brief:'港区调度室当日的去话与来话登记，按港钟填写。',
+  body:`
+  <div class="doc-head"><div class="doc-no">E-02</div><div>
+    <div class="doc-title">港 区 调 度 室<br>电 话 登 记 簿</div>
+    <div class="doc-meta">一九八九年十二月十四日 · 星期四 · 港钟（本室大钟）</div>
+  </div></div>
+  <p class="lead">本簿逐笔登记调度室当日全部去话与来话。时间一律按本室大钟填写。</p>
+  <table class="paper-t">
+    <tr><th style="width:5.5em">港钟</th><th style="width:4em">去向</th><th>对方</th><th style="width:4em">时长</th><th>事由</th></tr>
+    <tr><td class="num">20:55</td><td>来</td><td>铁路货运室</td><td class="num">3 分</td><td>通知 12 道夜间装车</td></tr>
+    <tr><td class="num">21:12</td><td>去</td><td>铁路货运室</td><td class="num">2 分</td><td>确认车皮到位</td></tr>
+    <tr><td class="num">21:30</td><td>来</td><td>港务局值班室</td><td class="num">4 分</td><td>次日巡展交接</td></tr>
+    <tr><td class="num">21:50</td><td>来</td><td>铁路货运室</td><td class="num">1 分</td><td>催问装车单</td></tr>
+    <tr><td class="num">22:00</td><td>去</td><td>港区公安分局</td><td class="num">2 分</td><td>报 B-3 失窃</td></tr>
+  </table>
+  <p class="small">登记人：顾承志　　复核：＿＿＿＿</p>
+  <div style="text-align:right;margin-top:1.2em"><span class="stamp">港区调度室</span></div>
+  <div class="margin-note">大钟上月中旬走慢过，修表的说已校准。今晚没再对时。</div>
+  `
+},
+{
+  id:'e03', no:'E-03', title:'电报局长途电话记录单', type:'record',
+  clock:'s', src:'临海港电报局 · 长途台',
+  brief:'电报局营业厅的长途电话流水，按铁路标准时填写。',
+  body:`
+  <div class="doc-head"><div class="doc-no">E-03</div><div>
+    <div class="doc-title">长 途 电 话 记 录 单</div>
+    <div class="doc-meta">临海港电报局营业厅 · 一九八九年十二月十四日 · 标准时</div>
+  </div></div>
+  <p class="lead">本单时间一律按铁路标准时填写，与港区大钟无关。</p>
+  <table class="paper-t">
+    <tr><th style="width:5.5em">标准时</th><th>主叫</th><th>被叫</th><th style="width:4em">时长</th><th>备注</th></tr>
+    <tr><td class="num">21:07</td><td>铁路货运室</td><td>港区调度室</td><td class="num">3 分</td><td>12 道夜间装车</td></tr>
+    <tr><td class="num">21:24</td><td>港区调度室</td><td>铁路货运室</td><td class="num">2 分</td><td>确认车皮</td></tr>
+    <tr><td class="num">21:42</td><td>港务局值班室</td><td>港区调度室</td><td class="num">4 分</td><td>巡展交接</td></tr>
+    <tr><td class="num">22:02</td><td>铁路货运室</td><td>港区调度室</td><td class="num">1 分</td><td>催问装车单</td></tr>
+    <tr><td class="num">22:12</td><td>港区调度室</td><td>港区公安分局</td><td class="num">2 分</td><td>B-3 失窃</td></tr>
+    <tr class="bad"><td class="num">21:20</td><td>韩德昌</td><td>上海 6321 报关行</td><td class="num">8 分</td><td>押运询价</td></tr>
+  </table>
+  <p class="small">经手：长途台 3 号席　　结算：记账</p>
+  <div style="text-align:right;margin-top:1em"><span class="stamp s">长途台</span></div>
+  <div class="margin-note">凡本局单据，钟点均以铁路标准时为准。港区大钟快慢与本局无关。</div>
+  `
+},
+{
+  id:'e04', no:'E-04', title:'调度室值班表', type:'record',
+  clock:'h', src:'港区调度室 · 张贴件',
+  brief:'当晚调度室的值班安排与交接记录。',
+  body:`
+  <div class="doc-head"><div class="doc-no">E-04</div><div>
+    <div class="doc-title">调 度 室 值 班 表</div>
+    <div class="doc-meta">一九八九年十二月 · 港钟</div>
+  </div></div>
+  <table class="paper-t">
+    <tr><th>班次</th><th>时间（港钟）</th><th>值班员</th><th>备注</th></tr>
+    <tr><td>早班</td><td class="num">06:00–14:00</td><td>钱一鸣</td><td>—</td></tr>
+    <tr><td>中班</td><td class="num">14:00–20:00</td><td>钱一鸣</td><td>—</td></tr>
+    <tr><td>夜班</td><td class="num">20:00–24:00</td><td><b>顾承志</b></td><td>单人值班</td></tr>
+    <tr><td>夜班</td><td class="num">00:00–06:00</td><td>孙立</td><td>—</td></tr>
+  </table>
+  <h4>交接班记录</h4>
+  <table class="paper-t">
+    <tr><th>时间（港钟）</th><th>事项</th><th>签字</th></tr>
+    <tr><td class="num">20:00</td><td>交接：电话 2 部正常，钥匙柜封条完好</td><td>顾承志</td></tr>
+    <tr><td class="num">20:28</td><td>为 B-3 更换封条 0417</td><td>顾承志</td></tr>
+    <tr><td class="num">20:50</td><td>开钥匙柜，借出 B-3 备用钥匙</td><td>顾承志</td></tr>
+    <tr><td class="num">21:55</td><td>收回 B-3 备用钥匙，柜门上锁</td><td>顾承志</td></tr>
+    <tr><td class="num">22:00</td><td>接报 B-3 失窃，清点钥匙 12 把，无缺</td><td>顾承志</td></tr>
+    <tr><td class="num">22:15</td><td>接报 B-3 失窃，电话报公安分局</td><td>顾承志</td></tr>
+  </table>
+  <p class="small">调度室至仓库 B-3 步行 3 分钟，见平面图。夜班期间调度室不得空人。</p>
+  <div style="text-align:right;margin-top:1em"><span class="stamp">已核对</span></div>
+  `
+},
+{
+  id:'e05', no:'E-05', title:'仓库值班记录', type:'record',
+  clock:'h', src:'保税仓库 B-3 · 保管员 周慧兰',
+  brief:'保税仓库 B-3 的巡库与封条记录，附保管员手写附记。',
+  body:`
+  <div class="doc-head"><div class="doc-no">E-05</div><div>
+    <div class="doc-title">仓 库 值 班 记 录</div>
+    <div class="doc-meta">保税仓库 B-3 · 一九八九年十二月十四日 · 港钟</div>
+  </div></div>
+  <p class="lead">按保税库规定，每两小时巡库一次，记录封条号与库门状况。</p>
+  <table class="paper-t">
+    <tr><th style="width:5em">港钟</th><th>封条号</th><th>库门</th><th>巡库人</th></tr>
+    <tr><td class="num">18:05</td><td class="num">0409</td><td>锁闭</td><td>周慧兰</td></tr>
+    <tr><td class="num">20:55</td><td class="num">0417</td><td>锁闭，封条完好</td><td>周慧兰</td></tr>
+    <tr><td class="num">23:10</td><td class="num">0417</td><td><span class="red">封条断落，库门虚掩</span></td><td>周慧兰</td></tr>
+  </table>
+  <p class="small">封条 0417 于 20:28 由调度员顾承志加封，见《封条领用登记》。</p>
+  <h4>手写附记</h4>
+  <p class="hand">二十点五十五分巡库，铅封完好，箱子在原位。回屋后胃绞痛，二十一时零八分去医务室，二十一时五十八分回。周慧兰</p>
+  <div class="margin-note">注：本页下方有擦改痕迹，原字迹已不可辨。</div>
+  <div style="text-align:right;margin-top:1em"><span class="stamp">B-3 库</span></div>
+  `
+},
+{
+  id:'e06', no:'E-06', title:'装卸记录簿', type:'receipt',
+  clock:'h', src:'装卸队休息室 · 值班台帐',
+  brief:'装卸队当夜的装车流水，按编号顺序装订。',
+  body:`
+  <div class="doc-head"><div class="doc-no">E-06</div><div>
+    <div class="doc-title">装 卸 记 录 簿</div>
+    <div class="doc-meta">第七码头装卸队 · 一九八九年十二月十四日 · 港钟</div>
+  </div></div>
+  <p class="lead">本簿由装卸队长逐笔填写，按编号顺序装订，不得跳号、补号。</p>
+  <table class="paper-t">
+    <tr><th style="width:4em">编号</th><th style="width:4.5em">港钟</th><th>车号</th><th>货件</th><th>押运</th><th>填单人</th></tr>
+    <tr><td class="num">05</td><td class="num">19:40</td><td>卡车 1</td><td>五金 12 件</td><td>—</td><td>罗四海</td></tr>
+    <tr><td class="num">06</td><td class="num">20:10</td><td>卡车 2</td><td>纺织品 8 捆</td><td>—</td><td>罗四海</td></tr>
+    <tr class="bad"><td class="num">07</td><td class="num">21:15</td><td>卡车 3</td><td>航空箱 1 只（空）</td><td>周慧兰</td><td>罗四海</td></tr>
+    <tr><td class="num">08</td><td class="num">21:25</td><td>卡车 5</td><td>纸浆 20 件</td><td>—</td><td>罗四海</td></tr>
+    <tr><td class="num">09</td><td class="num">22:05</td><td>卡车 3</td><td>空车出港</td><td>—</td><td>罗四海</td></tr>
+  </table>
+  <h4>稽核批注（调度室 顾承志，22 时 20 分）</h4>
+  <p class="small">第 07 号用<span class="red">纯蓝墨水</span>书写，本簿其余各笔均为蓝黑；纸面位置排在 08、09 之后。已提请核对，暂不下结论。</p>
+  <div style="text-align:right;margin-top:1em"><span class="stamp">待 查</span></div>
+  <div class="margin-note">注：本页右下角有撕损后重新粘补的痕迹。</div>
+  `
+},
+{
+  id:'e07', no:'E-07', title:'过磅单（地磅房）', type:'receipt',
+  clock:'h', src:'第七码头地磅房 · 三联单存根',
+  brief:'地磅房三联单存根，逐车逐次打印。',
+  body:`
+  <div class="doc-head"><div class="doc-no">E-07</div><div>
+    <div class="doc-title">货 车 过 磅 单</div>
+    <div class="doc-meta">第七码头地磅房 · 一九八九年十二月十四日 · 港钟</div>
+  </div></div>
+  <table class="paper-t">
+    <tr><th style="width:5em">港钟</th><th>车号</th><th style="width:5em">毛重</th><th style="width:5em">皮重</th><th style="width:5em">净重</th><th>去向</th><th>司磅</th></tr>
+    <tr><td class="num">20:40</td><td>卡车 3</td><td class="num">7.42 吨</td><td class="num">3.15 吨</td><td class="num">4.27 吨</td><td>入库 B-1</td><td>老马</td></tr>
+    <tr><td class="num">22:05</td><td>卡车 3</td><td class="num">3.18 吨</td><td class="num">3.15 吨</td><td class="num">0.03 吨</td><td>空车出港</td><td>老马</td></tr>
+  </table>
+  <p class="small">本单为存根联，逐车逐次打印，无手工补录。地磅房至东卡口行车 3 分钟。</p>
+  <h4>手写说明</h4>
+  <p class="hand">三号车夜里就过两回磅。九点一刻那会儿磅房没人，我在吃饭。马</p>
+  <div style="text-align:right;margin-top:1em"><span class="stamp">地磅房</span></div>
+  `
+},
+{
+  id:'e08', no:'E-08', title:'东侧卡口门卫登记簿', type:'record',
+  clock:'h', src:'第七码头东侧卡口 · 门卫 赵长贵',
+  brief:'东侧卡口当夜的人车出入登记。',
+  body:`
+  <div class="doc-head"><div class="doc-no">E-08</div><div>
+    <div class="doc-title">东 侧 卡 口<br>门 卫 登 记 簿</div>
+    <div class="doc-meta">一九八九年十二月十四日 · 港钟 · 当值 赵长贵</div>
+  </div></div>
+  <p class="lead">凡人、车过卡口，一律登记。夜间只开东侧卡口。</p>
+  <table class="paper-t">
+    <tr><th style="width:4.5em">港钟</th><th style="width:3em">出入</th><th>姓名 / 车号</th><th>事由</th><th>备注</th></tr>
+    <tr><td class="num">20:35</td><td>入</td><td>卡车 3</td><td>送货入库</td><td>司机 王</td></tr>
+    <tr><td class="num">21:14</td><td>出</td><td><b>罗四海</b></td><td>搬运空箱</td><td><span class="red">肩背帆布包一只</span></td></tr>
+    <tr><td class="num">21:14</td><td>入</td><td>陆小满</td><td>巡逻</td><td>民警</td></tr>
+    <tr><td class="num">21:46</td><td>入</td><td>罗四海</td><td>回队</td><td>空手</td></tr>
+    <tr><td class="num">22:10</td><td>出</td><td>卡车 3</td><td>空车出港</td><td>过磅 22:05</td></tr>
+    <tr><td class="num">22:25</td><td>入</td><td>顾承志</td><td>报案情</td><td>—</td></tr>
+  </table>
+  <div class="margin-note">注：卡车 3 从 20:35 进港到 22:10 出港，四个多小时一直停在 B-1 卸货位。</div>
+  <div style="text-align:right;margin-top:1em"><span class="stamp">东 卡 口</span></div>
+  `
+},
+{
+  id:'e09', no:'E-09', title:'西侧大门值班记录', type:'record',
+  clock:'h', src:'第七码头西侧大门 · 门卫 孙立',
+  brief:'西侧大门当夜的开关、落锁与交接记录。',
+  body:`
+  <div class="doc-head"><div class="doc-no">E-09</div><div>
+    <div class="doc-title">西 侧 大 门<br>值 班 记 录</div>
+    <div class="doc-meta">一九八九年十二月十四日 · 港钟 · 当值 孙立</div>
+  </div></div>
+  <table class="paper-t">
+    <tr><th style="width:5em">港钟</th><th>事项</th><th>签字</th></tr>
+    <tr><td class="num">20:18</td><td>落锁。大门钥匙一把交回调度室，一把封存本室。</td><td>孙立</td></tr>
+    <tr><td class="num">20:18</td><td>外道路照明关闭，围网外绕行通道同时封闭。</td><td>孙立</td></tr>
+    <tr><td class="num">23:40</td><td>交接班，大门仍为落锁状态，封条完好。</td><td>孙立 / 老郑</td></tr>
+  </table>
+  <p class="small">按港区规定：西侧大门 20:00 后落锁，次日 06:00 启封。落锁期间任何人不得出入，围网外绕行通道同步封闭。</p>
+  <div class="hand">一整夜没开过门，钥匙在调度室。有人问就说锁了。孙</div>
+  <div style="text-align:right;margin-top:1em"><span class="stamp">西大门</span></div>
+  `
+},
+{
+  id:'e10', no:'E-10', title:'港区医务室就诊登记', type:'record',
+  clock:'s', src:'港区医务室 · 夜班医士 冯淑仪',
+  brief:'港区医务室当夜的就诊登记，附医士手写附记。',
+  body:`
+  <div class="doc-head"><div class="doc-no">E-10</div><div>
+    <div class="doc-title">医 务 室 就 诊 登 记</div>
+    <div class="doc-meta">港区医务室 · 一九八九年十二月十四日 · <b>标准时</b></div>
+  </div></div>
+  <p class="lead">本室钟与铁路标准时一致，不使用港区大钟。</p>
+  <table class="paper-t">
+    <tr><th style="width:5.5em">标准时</th><th>患者</th><th>主诉</th><th>处置</th><th>离室时间</th></tr>
+    <tr><td class="num">20:05</td><td>装卸工 老马</td><td>手背擦伤</td><td>包扎</td><td class="num">20:20</td></tr>
+    <tr><td class="num">21:20</td><td><b>周慧兰</b></td><td>急性肠胃炎，呕吐</td><td>阿托品 1 支，留观</td><td class="num">22:10</td></tr>
+    <tr><td class="num">22:35</td><td>民警 陆小满</td><td>踝关节扭伤</td><td>冷敷</td><td class="num">22:50</td></tr>
+  </table>
+  <h4>医士附记</h4>
+  <p class="hand">周慧兰二十一时二十分来，脸色灰白，吐了两回，一直在里间躺着。二十二时十分才走。冯淑仪</p>
+  <p class="small">医务室至仓库 B-3 步行 11 分钟（见平面图）。</p>
+  <div style="text-align:right;margin-top:1em"><span class="stamp s">医务室</span></div>
+  `
+},
+{
+  id:'e11', no:'E-11', title:'巡逻打卡钟纸带', type:'record',
+  clock:'h', src:'港区公安分局 · 巡逻点 3（东侧卡口）',
+  brief:'巡逻钟纸带，按巡逻点自动打孔记录。',
+  body:`
+  <div class="doc-head"><div class="doc-no">E-11</div><div>
+    <div class="doc-title">巡 逻 打 卡 钟 纸 带</div>
+    <div class="doc-meta">港区公安分局 · 12 月 14 日 · 港钟 · 巡逻点 3（东侧卡口）</div>
+  </div></div>
+  <p class="lead">纸带由打卡钟自动打孔记录，钟体每周与调度室大钟对时。</p>
+  <div class="tape">
+    <div class="tr"><span>20:50</span><span><i class="hole"></i>巡逻点 3 · 东侧卡口</span></div>
+    <div class="tr"><span>21:14</span><span><i class="hole"></i>巡逻点 3 · 东侧卡口</span></div>
+    <div class="tr"><span>21:20</span><span><i class="hole"></i>巡逻点 4 · 铁路专用线</span></div>
+    <div class="tr"><span>21:50</span><span><i class="hole"></i>巡逻点 3 · 东侧卡口</span></div>
+    <div class="tr"><span>22:20</span><span><i class="hole"></i>巡逻点 5 · 客运码头</span></div>
+  </div>
+  <p class="small">执勤人：陆小满　　领班：老郑</p>
+  <div class="margin-note">注：打卡钟 20:50 之后走时正常，未发现拨针痕迹。</div>
+  <div style="text-align:right;margin-top:1em"><span class="stamp">公安分局</span></div>
+  `
+},
+{
+  id:'e12', no:'E-12', title:'封条领用登记', type:'receipt',
+  clock:'h', src:'港区调度室 · 封条柜',
+  brief:'调度室封条柜的领用、加封与回收记录。',
+  body:`
+  <div class="doc-head"><div class="doc-no">E-12</div><div>
+    <div class="doc-title">封 条 领 用 登 记</div>
+    <div class="doc-meta">港区调度室 · 一九八九年十二月十四日 · 港钟</div>
+  </div></div>
+  <table class="paper-t">
+    <tr><th style="width:5em">港钟</th><th style="width:5em">封条号</th><th>用途</th><th>加封人</th><th>见证</th></tr>
+    <tr><td class="num">20:28</td><td class="num">0417</td><td>仓库 B-3 库门</td><td>顾承志</td><td>周慧兰</td></tr>
+    <tr><td class="num">23:05</td><td class="num">0417</td><td>封条断落，回收残件</td><td>顾承志</td><td>周慧兰</td></tr>
+  </table>
+  <p class="small">封条为铅质一次性卡扣，剪断后无法复原，编号登记在册。0417 残件上钳口为剪切痕，非拉断。</p>
+  <h4>钥匙柜情况</h4>
+  <p class="small">调度室钥匙柜为铁皮双锁柜，柜钥匙仅值班员顾承志一把，随身携带，无备用。柜门 20:50 开启借出 B-3 备用钥匙，21:55 开启收回，其余时间上锁。</p>
+  <div class="margin-note">注：0417 加封时周慧兰在场，她亲手摸过铅封。</div>
+  <div style="text-align:right;margin-top:1em"><span class="stamp">封条柜</span></div>
+  `
+},
+{
+  id:'e13', no:'E-13', title:'钥匙借用登记', type:'receipt',
+  clock:'h', src:'调度室钥匙柜',
+  brief:'调度室钥匙柜的借用与归还登记。',
+  body:`
+  <div class="doc-head"><div class="doc-no">E-13</div><div>
+    <div class="doc-title">钥 匙 借 用 登 记</div>
+    <div class="doc-meta">港区调度室 · 一九八九年十二月十四日 · 港钟</div>
+  </div></div>
+  <table class="paper-t">
+    <tr><th style="width:4.5em">港钟</th><th style="width:4em">借用</th><th style="width:4em">归还</th><th>钥匙</th><th>借用人</th><th>经手</th></tr>
+    <tr><td class="num">19:10</td><td class="num">19:10</td><td class="num">19:25</td><td>B-1</td><td>装卸队 小刘</td><td>顾承志</td></tr>
+    <tr class="bad"><td class="num">20:50</td><td class="num">20:50</td><td class="num">21:55</td><td><b>B-3 备用</b></td><td><b>罗四海</b></td><td>顾承志</td></tr>
+    <tr><td class="num">21:55</td><td class="num">21:55</td><td class="num">21:55</td><td>B-3 备用</td><td>归还，钥匙齿完好</td><td>顾承志</td></tr>
+  </table>
+  <h4>钥匙情况</h4>
+  <p class="small">B-3 共两把钥匙：原配由保管员周慧兰随身携带；备用一把存放调度室钥匙柜。钥匙柜柜门于 20:50 贴封条 0418，22:00 才启封，期间无法再取钥匙。</p>
+  <div class="hand">罗队长说是去搬空箱，签了字就走了。钥匙二十一点五十五分才还回来。顾</div>
+  <div style="text-align:right;margin-top:1em"><span class="stamp">钥匙柜</span></div>
+  `
+},
+{
+  id:'e14', no:'E-14', title:'客运站售票记录', type:'receipt',
+  clock:'s', src:'客运码头售票处',
+  brief:'客运码头售票处当夜的售票流水，按标准时填写。',
+  body:`
+  <div class="doc-head"><div class="doc-no">E-14</div><div>
+    <div class="doc-title">客 运 站 售 票 记 录</div>
+    <div class="doc-meta">临海港客运码头 · 一九八九年十二月十四日 · <b>标准时</b></div>
+  </div></div>
+  <table class="paper-t">
+    <tr><th style="width:5.5em">标准时</th><th>航班</th><th>张数</th><th>购票人</th><th>备注</th></tr>
+    <tr><td class="num">19:40</td><td>22:30 往青岛</td><td>4</td><td>散客</td><td>—</td></tr>
+    <tr><td class="num">21:05</td><td>22:30 往青岛</td><td>1</td><td><b>白若云</b></td><td>省展览馆介绍信</td></tr>
+    <tr><td class="num">21:35</td><td>22:30 往青岛</td><td>2</td><td>散客</td><td>—</td></tr>
+  </table>
+  <h4>候船室值班员附记</h4>
+  <p class="hand">白小姐买完票就没出过候船室，一直坐在靠窗第三排看书。二十一时二十分广播晚点，她还来问过一句。老陈</p>
+  <p class="small">候船室至仓库 B-3 步行 8 分钟（见平面图）。末班船 20:30 已发出，下一班为次日 06:00。</p>
+  <div style="text-align:right;margin-top:1em"><span class="stamp s">客运站</span></div>
+  `
+},
+{
+  id:'e15', no:'E-15', title:'铁路货运员证词（崔守业）', type:'testimony',
+  clock:'s', src:'询问笔录 · 铁路货运室',
+  brief:'铁路货运室货运员崔守业的询问笔录。',
+  body:`
+  <div class="doc-head"><div class="doc-no">E-15</div><div>
+    <div class="doc-title">询 问 笔 录</div>
+    <div class="doc-meta">被询问人 崔守业 · 铁路货运室货运员 · 一九八九年十二月十五日 · 标准时</div>
+  </div></div>
+  <p class="lead">问：十四号夜里你在铁路专用线 12 道值班，说说看到的情况。</p>
+  <div class="qa"><div class="q">答：</div><div class="a">我值夜班，管 12 道那节巡展车皮。九点五十二分（铁路的钟）我从车厢上下来，看见一个人往东边走，肩上扛个帆布包，瘪的。</div></div>
+  <div class="qa"><div class="q">问：看清模样了吗？</div><div class="a">天黑，脸没看清。个子不高，穿一件装卸队的棉大衣，前襟少一颗扣子。走路有点外八字。</div></div>
+  <div class="qa"><div class="q">问：他看见你了吗？</div><div class="a">没有。我喊了一声“谁”，他没回头，走得挺急，往东侧卡口方向去了。</div></div>
+  <div class="qa"><div class="q">问：十二道夜里还有别人吗？</div><div class="a">没有。车皮是我一个人看着，十点五十才交班。</div></div>
+  <p class="small">被询问人签名：崔守业　　记录：陆小满　　一九八九年十二月十五日</p>
+  <div class="margin-note">注：装卸队棉大衣为港区统一发放，袖口有“第七码头”字样。</div>
+  <div style="text-align:right;margin-top:1em"><span class="stamp s">已 核</span></div>
+  `
+},
+{
+  id:'e16', no:'E-16', title:'罗四海证词', type:'testimony',
+  clock:'—', src:'询问笔录 · 装卸队休息室',
+  brief:'装卸队长罗四海的询问笔录。',
+  body:`
+  <div class="doc-head"><div class="doc-no">E-16</div><div>
+    <div class="doc-title">询 问 笔 录</div>
+    <div class="doc-meta">被询问人 罗四海 · 第七码头装卸队队长 · 一九八九年十二月十五日</div>
+  </div></div>
+  <div class="qa"><div class="q">问：十四号夜里你在哪里？</div><div class="a">八点四十五分从队里出来，开叉车去 B 区搬空箱。九点一刻把航空箱交给三号卡车，押运是周慧兰，装车单上写着。之后我从西侧大门出去，去港外的报关行找韩德昌，十点多回来的。</div></div>
+  <div class="qa"><div class="q">问：三号卡车几点走的？</div><div class="a">九点一刻装完就走了。车是老王开的，你不信去问地磅房。</div></div>
+  <div class="qa"><div class="q">问：你几点还的钥匙？</div><div class="a">九点五十五。钥匙在调度室，顾承志给的，我还给他。</div></div>
+  <div class="qa"><div class="q">问：为什么走西侧大门？</div><div class="a">近。报关行在港外西边，走东边要多绕二十分钟。</div></div>
+  <div class="qa"><div class="q">问：你走路是不是有点外八字？</div><div class="a">小时候腿摔过，改不过来。问这个干什么。</div></div>
+  <p class="small">被询问人签名：罗四海　　记录：陆小满　　一九八九年十二月十五日</p>
+  <div class="margin-note">注：本笔录所述行踪与值班、门卫记录有出入，已转外查。</div>
+  <div style="text-align:right;margin-top:1em"><span class="stamp">待 核</span></div>
+  `
+},
+{
+  id:'e17', no:'E-17', title:'周慧兰证词', type:'testimony',
+  clock:'—', src:'询问笔录 · 港区医务室',
+  brief:'B-3 保管员周慧兰的询问笔录。',
+  body:`
+  <div class="doc-head"><div class="doc-no">E-17</div><div>
+    <div class="doc-title">询 问 笔 录</div>
+    <div class="doc-meta">被询问人 周慧兰 · 保税仓库 B-3 保管员 · 一九八九年十二月十五日</div>
+  </div></div>
+  <div class="qa"><div class="q">问：十四号夜里你巡了几次库？</div><div class="a">两次。六点零五一次，八点五十五一次。八点五十五那次封条是好的，我摸过铅封，编号零四一七。</div></div>
+  <div class="qa"><div class="q">问：之后呢？</div><div class="a">回屋就开始胃疼，疼得直不起腰，吐了两回。我记不清几点出的门，走到医务室护士给我记了时间。</div></div>
+  <div class="qa"><div class="q">问：你怎么走的？带什么东西没有？</div><div class="a">就一个小手包，装着钥匙和病历本。疼成那样，什么都拿不动。</div></div>
+  <div class="qa"><div class="q">问：B-3 的钥匙呢？</div><div class="a">原配在我身上。备用在调度室钥匙柜，我只知道这个。</div></div>
+  <div class="qa"><div class="q">问：装车单上写你押运，是怎么回事？</div><div class="a">我没押过什么车。那天夜里我连库门都没再开过。</div></div>
+  <p class="small">被询问人签名：周慧兰　　记录：陆小满　　一九八九年十二月十五日</p>
+  <div style="text-align:right;margin-top:1em"><span class="stamp">已 核</span></div>
+  `
+},
+{
+  id:'e18', no:'E-18', title:'陆小满证词', type:'testimony',
+  clock:'h', src:'询问笔录 · 港区公安分局',
+  brief:'港区公安分局民警陆小满的询问笔录。',
+  body:`
+  <div class="doc-head"><div class="doc-no">E-18</div><div>
+    <div class="doc-title">询 问 笔 录</div>
+    <div class="doc-meta">被询问人 陆小满 · 港区公安分局民警 · 一九八九年十二月十五日 · 港钟</div>
+  </div></div>
+  <div class="qa"><div class="q">问：十四号夜里你的巡逻路线？</div><div class="a">从分局出发，二十点五十分到东侧卡口打卡，之后沿着围网往铁路专用线方向走，二十一点二十到十二道口，又折回来，二十一点五十分回到东卡口。</div></div>
+  <div class="qa"><div class="q">问：经过 B 区的时候看见什么了？</div><div class="a">二十点五十五分路过 B-3，周慧兰正拿手电照封条，我喊了她一声，她说“没事，好的”。那时候封条是完完整整贴着的。</div></div>
+  <div class="qa"><div class="q">问：在东卡口看见什么了？</div><div class="a">二十一点十四分，我正要进卡口，罗四海从里头出来，肩上背个帆布包，鼓鼓的。我喊他“罗队长”，他没理我，低着头往铁路那边去了。</div></div>
+  <div class="qa"><div class="q">问：平时他这样吗？</div><div class="a">平时挺客气。那天晚上不像他。</div></div>
+  <div class="qa"><div class="q">问：你后来又见过他吗？</div><div class="a">二十一点四十六分，他又从铁路那边回来，进卡口，空着手。我看了他一眼，他也没说话。</div></div>
+  <p class="small">被询问人签名：陆小满　　记录：老郑　　一九八九年十二月十五日</p>
+  <div class="margin-note">注：打卡纸带见 E-11，门卫登记见 E-08，时间可互相对上。</div>
+  <div style="text-align:right;margin-top:1em"><span class="stamp">已 核</span></div>
+  `
+},
+{
+  id:'e19', no:'E-19', title:'顾承志证词', type:'testimony',
+  clock:'h', src:'询问笔录 · 港区调度室',
+  brief:'港区调度员顾承志的询问笔录。',
+  body:`
+  <div class="doc-head"><div class="doc-no">E-19</div><div>
+    <div class="doc-title">询 问 笔 录</div>
+    <div class="doc-meta">被询问人 顾承志 · 港区调度员 · 一九八九年十二月十五日 · 港钟</div>
+  </div></div>
+  <div class="qa"><div class="q">问：十四号夜里你离开过调度室吗？</div><div class="a">没有。夜班就我一个人，走不开。电话一个接一个，登记簿上都有。</div></div>
+  <div class="qa"><div class="q">问：钥匙呢？</div><div class="a">钥匙柜是铁皮双锁柜，柜钥匙就我一把，随身带着。二十点五十分罗四海来借 B-3 备用钥匙，说去搬空箱，签了字。二十一点五十五分还回来。</div></div>
+  <div class="qa"><div class="q">问：中间有人借过钥匙吗？</div><div class="a">没有。柜子一直锁着，我人就坐在旁边。</div></div>
+  <div class="qa"><div class="q">问：B-3 的封条是你加的？</div><div class="a">是。二十点二十八分加的，零四一七，周慧兰在旁边看着。</div></div>
+  <div class="qa"><div class="q">问：几点发现失窃？</div><div class="a">二十二点整，周慧兰跑来说库门虚掩。我二十二点十二分电话报的公安分局。</div></div>
+  <p class="small">被询问人签名：顾承志　　记录：老郑　　一九八九年十二月十五日</p>
+  <div class="margin-note">注：电话记录见 E-02，电报局话单见 E-03，钥匙登记见 E-13。</div>
+  <div style="text-align:right;margin-top:1em"><span class="stamp">已 核</span></div>
+  `
+},
+{
+  id:'e20', no:'E-20', title:'白若云证词', type:'testimony',
+  clock:'s', src:'询问笔录 · 客运码头候船室',
+  brief:'省展览馆策展人白若云的询问笔录。',
+  body:`
+  <div class="doc-head"><div class="doc-no">E-20</div><div>
+    <div class="doc-title">询 问 笔 录</div>
+    <div class="doc-meta">被询问人 白若云 · 省展览馆策展人 · 一九八九年十二月十五日 · 标准时</div>
+  </div></div>
+  <div class="qa"><div class="q">问：你为什么在港口？</div><div class="a">来接那批底片。原定十五号早上装船，我十四号先到，想看一眼库房。</div></div>
+  <div class="qa"><div class="q">问：十四号夜里你在哪里？</div><div class="a">在候船室。我九点零五分买的票，二十二点半的船，之后一直坐在靠窗第三排看书，没出去过。</div></div>
+  <div class="qa"><div class="q">问：几点去看的库房？</div><div class="a">下午四点多，跟周慧兰一起进去的，箱子还封着。晚上没再去。</div></div>
+  <div class="qa"><div class="q">问：听说有人怀疑你？</div><div class="a">底片是我们馆的，我要拿还用得着偷？第二天一早船就到了，我跟着货走。</div></div>
+  <p class="small">被询问人签名：白若云　　记录：陆小满　　一九八九年十二月十五日</p>
+  <div class="margin-note">注：售票记录见 E-14，候船室值班员可证其未离开。</div>
+  <div style="text-align:right;margin-top:1em"><span class="stamp s">已 核</span></div>
+  `
+},
+{
+  id:'e21', no:'E-21', title:'韩德昌证词', type:'testimony',
+  clock:'s', src:'询问笔录 · 电报局营业厅',
+  brief:'德昌报关行老板韩德昌的询问笔录。',
+  body:`
+  <div class="doc-head"><div class="doc-no">E-21</div><div>
+    <div class="doc-title">询 问 笔 录</div>
+    <div class="doc-meta">被询问人 韩德昌 · 德昌报关行 · 一九八九年十二月十五日 · 标准时</div>
+  </div></div>
+  <div class="qa"><div class="q">问：十四号夜里你在哪里？</div><div class="a">在电报局营业厅打长途，给上海那边问押运的价。九点二十分开打，打了八分钟。</div></div>
+  <div class="qa"><div class="q">问：之前呢？</div><div class="a">七点多在港外吃饭，八点半到营业厅排队。长途台就两部电话，等了快一个小时。</div></div>
+  <div class="qa"><div class="q">问：你去过第七码头吗？</div><div class="a">白天去过，谈报关的事。夜里没进去——我进去干什么。</div></div>
+  <div class="qa"><div class="q">问：认识罗四海吗？</div><div class="a">认识，装卸队长嘛。十四号下午来找过我，问能不能帮他弄一张空箱的报关单，我没答应。</div></div>
+  <p class="small">被询问人签名：韩德昌　　记录：陆小满　　一九八九年十二月十五日</p>
+  <div class="margin-note">注：话费单见 E-03，21:20–21:28 标准时，共 8 分钟。</div>
+  <div style="text-align:right;margin-top:1em"><span class="stamp s">已 核</span></div>
+  `
+}
+];
+
+/* ============================================================
+   STATE
+   ============================================================ */
+const KEY='q7mt_case_v1';
+let S={read:{},star:{},note:{},tl:[],ans:{},sup:{},hint:{},solved:false,tries:0,intro:false};
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
+function load(){try{const r=localStorage.getItem(KEY);if(r){const o=JSON.parse(r);S=Object.assign(S,o);}}catch(e){}}
+function byId(id){return DOCS.find(d=>d.id===id);}
+const TYPE_NAME={map:'地图',record:'记录',receipt:'单据',testimony:'证词'};
+const TYPE_CLS={map:'t-map',record:'t-record',receipt:'t-receipt',testimony:'t-testimony'};
+let curDoc=null, curIdx=0, zoom=1, filter='all', qstr='';
+let popEv=null;
+
+/* ============================================================
+   QUESTIONS
+   ============================================================ */
+const QUESTIONS=[
+{
+  id:'who', title:'一、谁调走了底片', sub:'六个人那晚都到过第七码头。只能选一个。',
+  opts:[
+    {v:'罗四海',d:'装卸队队长'},
+    {v:'周慧兰',d:'B-3 保管员'},
+    {v:'顾承志',d:'调度员'},
+    {v:'白若云',d:'省展览馆策展人'},
+    {v:'陆小满',d:'港区民警'},
+    {v:'韩德昌',d:'报关行老板'}
+  ],
+  ans:'罗四海',
+  key:['e13','e08','e18','e05','e10'],
+  hints:[
+    '先别看动机。先问：谁能打开 B-3 的锁？',
+    '把《钥匙借用登记》(E-13) 和《封条领用登记》(E-12) 放在一起看。再想想，除了借出去的备用钥匙，还有谁手里有原配。',
+    'B-3 只有两把钥匙。备用钥匙 20:50–21:55 港钟在罗四海手里（E-13）；原配在周慧兰身上。钥匙柜是铁皮双锁柜，柜钥匙只有顾承志一把，他整夜守着电话（E-02 / E-03）。所以只有罗四海和周慧兰进得去。再看 E-10：医务室用标准时，周慧兰 21:20 到、22:10 走，换算成港钟是 21:08–21:58；B-3 到医务室步行 11 分钟（E-01），她最晚 20:57 离开库房。而 20:55 陆小满巡逻经过，亲眼看见封条完好（E-18）——她只有两分钟，不可能剪封条、开箱、取走 47 卷底片再锁门。剩下罗四海。'
+  ]
+},
+{
+  id:'when', title:'二、什么时间动的手', sub:'四段时间，按港钟计。',
+  opts:[
+    {v:'20:40–20:55 港钟',d:'封条加封之后、巡库之前'},
+    {v:'20:55–21:10 港钟',d:'巡库之后、出卡口之前'},
+    {v:'21:10–21:25 港钟',d:'出卡口之后'},
+    {v:'21:25–21:40 港钟',d:'到达 12 道前后'}
+  ],
+  ans:'20:55–21:10 港钟',
+  key:['e05','e08','e13','e01'],
+  hints:[
+    '找出两个“硬时间”：底片最后一次被确认还在库里，和他带着东西离开仓库区。',
+    '《仓库值班记录》(E-05) 给出下界；《东侧卡口门卫登记簿》(E-08) 给出上界，中间用 E-01 地图上的步行时间补上。',
+    '20:55 港钟周慧兰巡库，封条 0417 完好（E-05）——这是下界。21:14 港钟罗四海出东侧卡口（E-08），B-3 到东卡口步行 4 分钟（E-01），所以他最晚 21:10 离开 B-3——这是上界。动手窗口就是 20:55–21:10 港钟，也就是 21:07–21:22 标准时。'
+  ]
+},
+{
+  id:'route', title:'三、走了哪条路线', sub:'三条路，只有一条在案发时段走得通。',
+  opts:[
+    {v:'西侧大门 → 港外绕行 → 铁路专用线',d:'地图标注 14 分钟'},
+    {v:'东侧卡口 → 铁路专用线 12 道',d:'地图标注 4 + 6 分钟'},
+    {v:'客运码头 → 水路 → 铁路专用线',d:'需船只接驳'}
+  ],
+  ans:'东侧卡口 → 铁路专用线 12 道',
+  key:['e09','e14','e08','e01'],
+  hints:[
+    '排除法。先看哪条路在案发时段根本走不通，剩下的那条再用时间验证。',
+    '《西侧大门值班记录》(E-09) 排掉一条，《客运站售票记录》(E-14) 排掉一条；再用《东侧卡口门卫登记簿》(E-08) 和地图核对第三条。',
+    '西侧大门 20:18 港钟落锁，钥匙交回调度室，围网外绕行通道同时封闭，到次日 06:00 才开（E-09）——第一条路死。客运码头末班船 20:30 标准时已发出，下一班次日 06:00，候船室夜间不放人（E-14）——第三条路死。只剩东侧卡口。验证：21:14 港钟出东卡口，东卡口到 12 道步行 6 分钟，21:20 到达；老崔 21:52 标准时（=21:40 港钟）看见他离开 12 道（E-15），时间对得上。'
+  ]
+},
+{
+  id:'forged', title:'四、伪造了哪一份记录', sub:'四份里只有一份是事后补写的。',
+  opts:[
+    {v:'装卸记录簿 第 07 号',d:'21:15 卡车 3 提走航空箱'},
+    {v:'过磅单（地磅房）',d:'卡车 3 两次过磅'},
+    {v:'东侧卡口门卫登记簿',d:'人车出入登记'},
+    {v:'调度室值班表',d:'交接班记录'}
+  ],
+  ans:'装卸记录簿 第 07 号',
+  key:['e06','e07','e08','e10','e05'],
+  hints:[
+    '四份记录里，有一份说的事在别的材料里对不上。先盯住它写的时间点。',
+    '把《装卸记录簿》(E-06) 第 07 号，和《过磅单》(E-07)、《东侧卡口门卫登记簿》(E-08)、《医务室就诊登记》(E-10) 放在一起看。',
+    '07 号说 21:15 港钟卡车 3 提走航空箱、周慧兰押运。但卡车 3 只在 20:40 和 22:05 过磅（E-07），20:35 入、22:10 出东卡口（E-08），21:15 根本不在港内；周慧兰 21:08–21:58 港钟在医务室（E-10，标准时换算）。而且 07 号用纯蓝墨水，本簿其余都是蓝黑，纸面位置还排在 08、09 之后——是事后插进去的。'
+  ]
+}
+];
+
+const SOLUTION_TITLE='结案报告';
+
+function solutionHTML(){
+  return `
+  <div class="solution">
+    <h2>结案报告</h2>
+    <div class="keyline">第七码头保税仓库 B-3 · 一九八九年十二月十四日夜 · 四十七卷纪实摄影原片</div>
+
+    <h3>一、谁：罗四海</h3>
+    <p>B-3 只有两把钥匙。备用钥匙 20:50–21:55 港钟由装卸队长罗四海借走（E-13）；原配在保管员周慧兰身上。调度室钥匙柜是铁皮双锁柜，柜钥匙只有值班员顾承志一把，而顾承志整夜在接电话，四通电话都能在电报局话单上逐条对上（E-02 / E-03）。所以在动手窗口里，能打开 B-3 的只有罗四海和周慧兰。</p>
+    <p>周慧兰被排除：医务室登记用标准时，她 21:20 到、22:10 离开（E-10）。两套钟相差 12 分钟，换算成港钟是 21:08–21:58。B-3 到医务室步行 11 分钟（E-01），也就是说她最晚 20:57 就离开了库房——距离 20:55 巡库只有两分钟。那两分钟里不可能剪断铅封、开箱、取走四十七卷底片、再把库门掩好。何况 20:55 陆小满巡逻经过，亲眼看见封条完好（E-18），这不是她自己写的记录。她连装车单上的“押运”都是被人写上去的。</p>
+    <p class="ans">结论：罗四海。</p>
+
+    <h3>二、什么时间：20:55–21:10 港钟（21:07–21:22 标准时）</h3>
+    <p>下界来自 E-05：20:55 港钟周慧兰巡库，封条 0417 完好，她亲手摸过铅封。</p>
+    <p>上界来自 E-08 与 E-01：21:14 港钟罗四海出东侧卡口，而 B-3 到东卡口步行 4 分钟，所以他最晚 21:10 离开 B-3。</p>
+    <p class="ans">结论：动手窗口 20:55–21:10 港钟。</p>
+
+    <h3>三、哪条路线：东侧卡口 → 铁路专用线 12 道</h3>
+    <table>
+      <tr><th>候选路线</th><th>是否可行</th><th>依据</th></tr>
+      <tr><td>西侧大门 → 港外绕行</td><td class="ans">不可行</td><td>20:18 港钟落锁，钥匙交回调度室，绕行通道同步封闭，次日 06:00 才开（E-09）</td></tr>
+      <tr><td>客运码头 → 水路</td><td class="ans">不可行</td><td>末班船 20:30 标准时已发出，候船室夜间不放人，水上派出所 21:00 后无船只移动（E-14）</td></tr>
+      <tr><td>东侧卡口 → 12 道</td><td><b>可行</b></td><td>21:14 港钟出卡口，步行 6 分钟，21:20 到 12 道；老崔 21:52 标准时（21:40 港钟）看见他离开（E-08 / E-15 / E-01）</td></tr>
+    </table>
+    <p class="ans">结论：东侧卡口 → 铁路专用线 12 道。</p>
+
+    <h3>四、伪造记录：装卸记录簿 第 07 号</h3>
+    <p>07 号写着“21:15 港钟，卡车 3，航空箱 1 只（空），押运周慧兰”。四条独立证据把它推翻：</p>
+    <table>
+      <tr><th>对照材料</th><th>实际内容</th><th>说明</th></tr>
+      <tr><td>E-07 过磅单</td><td>卡车 3 只在 20:40（重车 4.27 吨）与 22:05（空车 0.03 吨）两次过磅</td><td>21:15 没有磅单，地磅房无人</td></tr>
+      <tr><td>E-08 门卫登记</td><td>卡车 3 20:35 入、22:10 出，中间四个多小时没动</td><td>21:15 未过东卡口</td></tr>
+      <tr><td>E-10 医务室</td><td>周慧兰 21:20–22:10 标准时在诊，即 21:08–21:58 港钟</td><td>不可能同时押运</td></tr>
+      <tr><td>E-06 本簿</td><td>07 号用纯蓝墨水，其余各笔蓝黑；纸面位置在 08、09 之后</td><td>事后插入</td></tr>
+    </table>
+    <p class="ans">结论：伪造的是《装卸记录簿》第 07 号装车记录。</p>
+
+    <h3>五、两套钟</h3>
+    <p>港区内部（调度室、仓库、门卫、装卸队、地磅房、打卡钟）用港钟；电报局、铁路、医务室、客运站用铁路标准时。用 E-02 与 E-03 的四组同事件电话逐条相减：</p>
+    <table>
+      <tr><th>事件</th><th>港钟 E-02</th><th>标准时 E-03</th><th>差</th></tr>
+      <tr><td>铁路货运室 → 调度室 3 分</td><td>20:55</td><td>21:07</td><td>12 分</td></tr>
+      <tr><td>调度室 → 铁路货运室 2 分</td><td>21:12</td><td>21:24</td><td>12 分</td></tr>
+      <tr><td>港务局 → 调度室 4 分</td><td>21:30</td><td>21:42</td><td>12 分</td></tr>
+      <tr><td>铁路货运室 → 调度室 1 分</td><td>21:50</td><td>22:02</td><td>12 分</td></tr>
+    </table>
+    <p>四组全部相差 12 分钟，港钟慢 12 分钟。这个差值决定了周慧兰的行踪怎么读，也决定了 07 号记录错在哪一分钟。</p>
+
+    <h3>六、完整经过</h3>
+    <table>
+      <tr><th>港钟</th><th>标准时</th><th>事件</th></tr>
+      <tr><td>20:18</td><td>20:30</td><td>西侧大门落锁，钥匙交回调度室</td></tr>
+      <tr><td>20:28</td><td>20:40</td><td>顾承志为 B-3 加封条 0417，周慧兰见证</td></tr>
+      <tr><td>20:45</td><td>20:57</td><td>罗四海驾叉车离开装卸队</td></tr>
+      <tr><td>20:50</td><td>21:02</td><td>罗四海借走 B-3 备用钥匙</td></tr>
+      <tr><td>20:55</td><td>21:07</td><td>周慧兰巡库，封条 0417 完好</td></tr>
+      <tr><td>20:58</td><td>21:10</td><td>周慧兰离开库房，步行去医务室</td></tr>
+      <tr><td>21:05</td><td>21:17</td><td>罗四海剪断封条，开箱取走 47 卷底片</td></tr>
+      <tr><td>21:10</td><td>21:22</td><td>罗四海背帆布包离开 B-3</td></tr>
+      <tr><td>21:14</td><td>21:26</td><td>出东侧卡口，陆小满同时入卡口，两人打照面</td></tr>
+      <tr><td>21:20</td><td>21:32</td><td>到铁路专用线 12 道，把底片藏进“巡展道具”木箱</td></tr>
+      <tr><td>21:40</td><td>21:52</td><td>老崔看见他扛空帆布包离开 12 道</td></tr>
+      <tr><td>21:46</td><td>21:58</td><td>重新进入东侧卡口，空手</td></tr>
+      <tr><td>21:55</td><td>22:07</td><td>归还 B-3 备用钥匙</td></tr>
+      <tr><td>21:58</td><td>22:10</td><td>12 道货车发车，底片随车离港</td></tr>
+      <tr><td>22:40</td><td>22:52</td><td>补写 07 号装车记录，把水搅到周慧兰身上</td></tr>
+    </table>
+    <p>他的算盘是：只要有一张 21:15 港钟的装车单，箱子就会“在动手之前”合法离库；再写上周慧兰的名字，嫌疑自然落到保管员头上。他没算到的是，卡车 3 那晚根本没动过，而周慧兰那两小时一直躺在医务室里。</p>
+    <div style="text-align:right;margin-top:1.4em"><span class="stamp big">结 案</span></div>
+  </div>`;
+}
+
+/* ============================================================
+   RENDER
+   ============================================================ */
+const $=s=>document.querySelector(s);
+const $$=s=>Array.from(document.querySelectorAll(s));
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('on');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('on'),1900);}
+function readCount(){return DOCS.filter(d=>S.read[d.id]).length;}
+function starCount(){return DOCS.filter(d=>S.star[d.id]).length;}
+function pad(n){return String(n).padStart(2,'0');}
+function toMin(t){const [h,m]=t.split(':').map(Number);return h*60+m;}
+function toStr(m){return pad(Math.floor(m/60)%24)+':'+pad(m%60);}
+function hToS(t){return toStr(toMin(t)+12);}
+function sToH(t){return toStr(toMin(t)-12);}
+
+function renderProgress(){
+  $('#pRead').textContent=readCount();
+  $('#pStar').textContent=starCount();
+  $('#bTl').textContent=S.tl.length;
+}
+
+function docHTML(d){
+  if(d.type==='map') return d.body;
+  return d.body;
+}
+
+function cardHTML(d){
+  const read=S.read[d.id]?1:0, star=S.star[d.id]?1:0;
+  const clk=d.clock==='h'?'<span class="clk h">港钟</span>':d.clock==='s'?'<span class="clk s">标准时</span>':'';
+  return `<button class="evcard" data-id="${d.id}" data-read="${read}" data-star="${star}">
+    <div class="inner">
+      <div class="row1"><span class="evno">${d.no}</span><span class="tag ${TYPE_CLS[d.type]}">${TYPE_NAME[d.type]}</span>${clk}</div>
+      <h3>${esc(d.title)}</h3>
+      <p>${esc(d.brief)}</p>
+      <div class="foot"><span class="dot"></span><span>${read?'已读':'未读'}</span><span class="star ${star?'on':''}">${star?'★':'☆'}</span></div>
+    </div>
+  </button>`;
+}
+
+function filtered(){
+  return DOCS.filter(d=>{
+    if(filter==='unread'){ if(S.read[d.id]) return false; }
+    else if(filter==='star'){ if(!S.star[d.id]) return false; }
+    else if(filter!=='all' && d.type!==filter) return false;
+    if(qstr){
+      const hay=(d.no+d.title+d.brief+d.body).toLowerCase();
+      if(!hay.includes(qstr.toLowerCase())) return false;
+    }
+    return true;
+  });
+}
+
+function renderGrid(){
+  const list=filtered();
+  $('#grid').innerHTML=list.map(cardHTML).join('')||'<div class="tl-empty">没有匹配的档案。</div>';
+  $$('#grid .evcard').forEach(el=>{
+    el.addEventListener('click',()=>openDoc(el.dataset.id));
+  });
+}
+
+/* ---------- reader ---------- */
+function openDoc(id){
+  curDoc=byId(id); if(!curDoc)return;
+  curIdx=DOCS.findIndex(d=>d.id===id);
+  S.read[id]=true; save(); renderProgress(); renderGrid();
+  $('#rTtl').textContent=curDoc.no+'　'+curDoc.title;
+  $('#rPos').textContent=(curIdx+1)+' / '+DOCS.length;
+  $('#rSheet').innerHTML=`<div class="doc" id="docEl">${docHTML(curDoc)}</div>`;
+  $('#rStar').textContent=S.star[id]?'★ 已标记':'☆ 标记';
+  $('#rStar').classList.toggle('on',!!S.star[id]);
+  $('#reader').classList.add('on');
+  document.body.classList.add('reading');
+  window.scrollTo(0,0);
+  applyZoom();
+}
+function closeReader(){
+  $('#reader').classList.remove('on');
+  document.body.classList.remove('reading');
+  curDoc=null;
+}
+function applyZoom(){
+  const el=$('#docEl'); if(!el)return;
+  el.style.setProperty('--z',zoom);
+  $('#zReset').textContent=zoom.toFixed(1)+'×';
+}
+function step(dir){
+  let i=(curIdx+dir+DOCS.length)%DOCS.length;
+  openDoc(DOCS[i].id);
+}
+
+/* ---------- timeline ---------- */
+function renderTL(){
+  const g=$('#tlgrid');
+  if(!S.tl.length){g.innerHTML='';$('#tlEmpty').style.display='block';return;}
+  $('#tlEmpty').style.display='none';
+  const rows=S.tl.map((e,i)=>({i,e,m:toMin(e.t)+(e.clock==='s'?-12:0)})).sort((a,b)=>a.m-b.m);
+  g.innerHTML=`<div class="tlheadrow"><div class="h">港钟</div><div></div><div class="s">标准时</div></div>`+rows.map(r=>{
+    const h=toStr(r.m), s=hToS(h);
+    return `<div class="tlrow">
+      <div class="h">${h}</div>
+      <div class="body">
+        <span class="tlitem" data-i="${r.i}">${esc(r.e.label||'未命名')} <span class="x" data-x="${r.i}">✕</span></span>
+        ${r.e.ev?`<span class="muted small">${byId(r.e.ev)?byId(r.e.ev).no+' ':''}${esc(byId(r.e.ev)?byId(r.e.ev).title:'')}</span>`:''}
+      </div>
+      <div class="s">${s}</div>
+    </div>`;
+  }).join('');
+  $$('#tlgrid .x').forEach(x=>x.addEventListener('click',ev=>{
+    ev.stopPropagation();S.tl.splice(Number(x.dataset.x),1);save();renderTL();renderProgress();
+  }));
+  $$('#tlgrid .tlitem').forEach(el=>el.addEventListener('click',()=>{
+    const e=S.tl[Number(el.dataset.i)];
+    if(e&&e.ev)openDoc(e.ev);
+  }));
+  renderProgress();
+}
+
+function openPop(evId){
+  popEv=evId||null;
+  $('#popLabel').value='';
+  $('#popTime').value='21:14';
+  $('#popClock').value='h';
+  $('#pop').classList.add('on');
+  setTimeout(()=>$('#popTime').focus(),120);
+}
+
+/* ---------- case ---------- */
+function renderCase(){
+  const w=$('#casewrap');
+  if(S.solved){
+    w.innerHTML=`<div style="margin-bottom:14px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+      <span class="pill">已结案 · 提交 ${S.tries} 次</span>
+      <button class="tool" id="btnCase2">回到四问</button>
+    </div>
+    <div id="solHolder">${solutionHTML()}</div>`;
+    $('#btnCase2').addEventListener('click',()=>{S.solved=false;save();renderCase();});
+    return;
+  }
+  w.innerHTML=QUESTIONS.map(q=>{
+    const a=S.ans[q.id], sup=S.sup[q.id]||[], h=S.hint[q.id]||0;
+    return `<div class="qcard" data-q="${q.id}">
+      <h3>${q.title}</h3>
+      <div class="sub">${q.sub}</div>
+      <div class="opts">${q.opts.map(o=>`<button class="opt ${a===o.v?'on':''}" data-v="${esc(o.v)}"><span class="k">${a===o.v?'●':'○'}</span>${esc(o.v)}<div style="font-size:11px;opacity:.6;margin-top:2px">${esc(o.d)}</div></button>`).join('')}</div>
+      <div class="evsel" data-q="${q.id}">
+        ${DOCS.map(d=>`<span class="evchip ${sup.includes(d.id)?'on':''}" data-e="${d.id}" title="${esc(d.title)}">${d.no} ${esc(d.title.replace(/（.*?）/g,''))}</span>`).join('')}
+      </div>
+      <div class="hintrow">
+        <button class="hintbtn" data-h="${q.id}" data-n="1" ${h>=1?'disabled':''}>提示一 · 去哪类材料找</button>
+        <button class="hintbtn" data-h="${q.id}" data-n="2" ${h>=2?'disabled':''}>提示二 · 哪两份对照</button>
+        <button class="hintbtn" data-h="${q.id}" data-n="3" ${h>=3?'disabled':''}>提示三 · 讲清推理</button>
+      </div>
+      <div class="hintbox ${h>0?'on':''}" id="hb-${q.id}">${h>0?esc(q.hints[h-1]):''}</div>
+      <div class="verdict" id="vd-${q.id}"></div>
+    </div>`;
+  }).join('')+
+  `<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:6px">
+     <button class="tool primary" id="btnSubmit" style="padding:12px 26px;font-size:14px">提交结案</button>
+     <span class="muted small" style="align-self:center">四项结论都要选，每项至少勾一份支持证据。</span>
+   </div>`;
+
+  $$('#casewrap .opt').forEach(b=>b.addEventListener('click',()=>{
+    const qid=b.closest('.qcard').dataset.q;
+    S.ans[qid]=b.dataset.v;save();renderCase();
+  }));
+  $$('#casewrap .evchip').forEach(c=>c.addEventListener('click',()=>{
+    const qid=c.closest('.evsel').dataset.q;
+    S.sup[qid]=S.sup[qid]||[];
+    const i=S.sup[qid].indexOf(c.dataset.e);
+    if(i>=0)S.sup[qid].splice(i,1);else S.sup[qid].push(c.dataset.e);
+    save();renderCase();
+  }));
+  $$('#casewrap .hintbtn').forEach(b=>b.addEventListener('click',()=>{
+    const qid=b.dataset.h,n=Number(b.dataset.n);
+    S.hint[qid]=Math.max(S.hint[qid]||0,n);save();renderCase();
+  }));
+  $('#btnSubmit').addEventListener('click',submitCase);
+}
+
+function submitCase(){
+  S.tries=(S.tries||0)+1;
+  let allOk=true, msgs=[];
+  QUESTIONS.forEach(q=>{
+    const a=S.ans[q.id], sup=S.sup[q.id]||[];
+    const aOk=a===q.ans;
+    const sOk=sup.some(x=>q.key.includes(x));
+    if(!aOk||!sOk)allOk=false;
+    const vd=$('#vd-'+q.id);
+    if(vd){
+      vd.className='verdict '+(aOk&&sOk?'ok':'bad');
+      vd.innerHTML=aOk
+        ? (sOk?'✓ 结论正确，证据成立。':'结论对，但支持证据不足——再挑一份更直接的。')
+        : '✗ 结论不成立。'+(sOk?'':'（证据也未命中）');
+    }
+  });
+  if(allOk){
+    S.solved=true;save();renderCase();
+    window.scrollTo({top:0,behavior:'smooth'});
+    toast('结案成立。完整推理已展开。');
+  }else{
+    save();
+    toast('有结论或证据不成立，再查一遍。');
+  }
+}
+
+/* ============================================================
+   EVENTS
+   ============================================================ */
+function switchView(v){
+  $$('.tab').forEach(t=>t.setAttribute('aria-selected',t.dataset.view===v?'true':'false'));
+  $$('.view').forEach(s=>s.classList.toggle('on',s.id==='view-'+v));
+  window.scrollTo(0,0);
+}
+function boot(){
+  load();
+  renderProgress();
+  renderGrid();
+  renderTL();
+  renderCase();
+  if(!S.intro){$('#intro').classList.add('on');document.body.classList.add('introing');}
+  $$('.tab').forEach(t=>t.addEventListener('click',()=>switchView(t.dataset.view)));
+  $$('.chip').forEach(c=>c.addEventListener('click',()=>{
+    $$('.chip').forEach(x=>x.classList.remove('on'));c.classList.add('on');
+    filter=c.dataset.f;renderGrid();
+  }));
+  $('#q').addEventListener('input',e=>{qstr=e.target.value.trim();renderGrid();});
+  $('#rClose').addEventListener('click',closeReader);
+  $('#rPrev').addEventListener('click',()=>step(-1));
+  $('#rNext').addEventListener('click',()=>step(1));
+  $('#zIn').addEventListener('click',()=>{zoom=Math.min(2,zoom+0.15);applyZoom();});
+  $('#zOut').addEventListener('click',()=>{zoom=Math.max(0.6,zoom-0.15);applyZoom();});
+  $('#zReset').addEventListener('click',()=>{zoom=1;applyZoom();});
+  $('#rStar').addEventListener('click',()=>{
+    if(!curDoc)return;S.star[curDoc.id]=!S.star[curDoc.id];save();
+    $('#rStar').textContent=S.star[curDoc.id]?'★ 已标记':'☆ 标记';
+    $('#rStar').classList.toggle('on',!!S.star[curDoc.id]);
+    renderProgress();renderGrid();
+  });
+  $('#rTl').addEventListener('click',()=>{if(curDoc)openPop(curDoc.id);});
+  $('#rNote').addEventListener('click',()=>{
+    if(!curDoc)return;
+    const cur=S.note[curDoc.id]||'';
+    const v=prompt('写点笔记（只存在本机）：',cur);
+    if(v!==null){S.note[curDoc.id]=v;save();}
+  });
+  $('#btnAddTl').addEventListener('click',()=>openPop(null));
+  $('#popCancel').addEventListener('click',()=>$('#pop').classList.remove('on'));
+  $('#popOk').addEventListener('click',()=>{
+    const t=$('#popTime').value||'21:14', c=$('#popClock').value, l=$('#popLabel').value.trim();
+    S.tl.push({t,clock:c,label:l||'未命名',ev:popEv});
+    save();$('#pop').classList.remove('on');renderTL();
+    toast('已加入时间线');
+    if($('#reader').classList.contains('on'))closeReader();
+    switchView('tl');
+  });
+  $('#btnIntro').addEventListener('click',()=>{$('#intro').classList.add('on');document.body.classList.add('introing');window.scrollTo(0,0);});
+  $('#introGo').addEventListener('click',()=>{S.intro=true;save();$('#intro').classList.remove('on');document.body.classList.remove('introing');});
+  $('#btnReset').addEventListener('click',()=>{
+    if(!confirm('清空全部阅读进度、标记、时间线和结案记录，重新开始？'))return;
+    S={read:{},star:{},note:{},tl:[],ans:{},sup:{},hint:{},solved:false,tries:0,intro:true};
+    save();renderProgress();renderGrid();renderTL();renderCase();switchView('desk');toast('已重置');
+  });
+  document.addEventListener('keydown',e=>{
+    if($('#reader').classList.contains('on')){
+      if(e.key==='Escape')closeReader();
+      if(e.key==='ArrowLeft')step(-1);
+      if(e.key==='ArrowRight')step(1);
+    }
+  });
+  $('#reader').addEventListener('click',e=>{if(e.target===$('#reader'))closeReader();});}
+boot();
+</script>
+</body>
+</html>
